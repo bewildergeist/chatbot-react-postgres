@@ -19,10 +19,7 @@ export function Layout({ children }) {
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1"
-        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Chatbot</title>
         <Meta />
         <Links />
@@ -63,7 +60,8 @@ export function ErrorBoundary({ error }) {
         padding: 16,
         maxWidth: 1024,
         margin: "0 auto",
-      }}>
+      }}
+    >
       <h1>{message}</h1>
       <p>{details}</p>
       {stack && (
