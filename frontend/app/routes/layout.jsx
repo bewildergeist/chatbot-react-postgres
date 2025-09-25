@@ -91,22 +91,19 @@ export default function Layout() {
   const [threads, setThreads] = useState(initialThreads);
 
   // CALLBACK FUNCTION: Handle deleting a thread by ID
-  const deleteThread = (threadId) => {    
-    console.log('Layout: Deleting thread with ID:', threadId);
-    
+  const deleteThread = (threadId) => {
+    console.log("Layout: Deleting thread with ID:", threadId);
+
     // IMMUTABLE UPDATE: Create new array without the deleted thread
-    setThreads(currentThreads => 
-      currentThreads.filter(thread => thread.id !== threadId)
+    setThreads((currentThreads) =>
+      currentThreads.filter((thread) => thread.id !== threadId),
     );
   };
 
   return (
     <div className="app-layout">
       {/* Passing both data and callbacks via prop drilling */}
-      <Sidebar 
-        threads={threads} 
-        onDeleteThread={deleteThread}
-      />
+      <Sidebar threads={threads} onDeleteThread={deleteThread} />
       <main className="main-content">
         <Outlet />
       </main>

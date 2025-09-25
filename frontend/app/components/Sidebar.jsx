@@ -41,7 +41,7 @@ function ChatThreadItem({ thread, onDeleteThread }) {
   const handleDeleteClick = (event) => {
     // Prevent the click from bubbling up to parent elements
     event.stopPropagation();
-    
+
     // Call the callback function passed from parent to delete the thread
     if (onDeleteThread) {
       onDeleteThread(id);
@@ -133,10 +133,7 @@ export default function Sidebar({ threads, onDeleteThread }) {
     <aside className="sidebar">
       {/* Component composition with both data and callback drilling */}
       <SidebarHeader />
-      <ChatThreadsList 
-        threads={threads} 
-        onDeleteThread={onDeleteThread}
-      />
+      <ChatThreadsList threads={threads} onDeleteThread={onDeleteThread} />
       <SidebarFooter />
     </aside>
   );
