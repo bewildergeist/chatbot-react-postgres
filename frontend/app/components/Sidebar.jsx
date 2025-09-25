@@ -28,14 +28,30 @@ function SidebarHeader() {
 /**
  * ChatThreadItem Component
  *
- * Now includes INTERACTIVE ELEMENTS! Key concepts:
- * 1. DESTRUCTURING: Extract href and title directly from props
- * 2. BUTTON ELEMENTS: Proper HTML semantics for interactive actions
- * 3. ACCESSIBILITY: ARIA labels and proper focus management
- * 4. EVENT HANDLING: onClick handlers for user interactions
- * 5. CSS HOVER STATES: Show/hide elements based on user interaction
+ * Now includes EVENT HANDLING! Key concepts:
+ * 1. DESTRUCTURING: Extract id, href, and title from thread prop
+ * 2. EVENT HANDLERS: onClick function that responds to user interactions
+ * 3. CONSOLE LOGGING: Debugging technique to inspect event data
+ * 4. OBJECT DESTRUCTURING: Clean way to pass all thread data
+ * 5. PREVENT DEFAULT: Stop unwanted side effects from events
  */
-function ChatThreadItem({ href, title }) {
+function ChatThreadItem({ thread }) {
+  const { id, href, title } = thread;
+
+  const handleDeleteClick = (event) => {
+    // Prevent the click from bubbling up to parent elements
+    event.stopPropagation();
+    
+    // Log relevant information about the clicked thread
+    console.log('Delete button clicked for thread:', {
+      id: id,
+      title: title,
+      href: href,
+      element: event.target,
+      timestamp: new Date().toISOString()
+    });
+  };
+
   return (
     <li className="chat-thread-item">
       <div className="chat-thread-item-content">
@@ -47,6 +63,7 @@ function ChatThreadItem({ href, title }) {
           aria-label={`Delete thread: ${title}`}
           title="Delete this conversation"
           type="button"
+          onClick={handleDeleteClick}
         >
           &times;
         </button>
@@ -69,12 +86,11 @@ function ChatThreadsList({ threads = [] }) {
   return (
     <nav className="chat-threads-list" aria-label="Chat threads">
       <ul>
-        {/* Using destructured threads with safe default! */}
+        {/* Passing entire thread object for event handling */}
         {threads.map((thread) => (
           <ChatThreadItem
             key={thread.id}
-            href={thread.href}
-            title={thread.title}
+            thread={thread}
           />
         ))}
       </ul>
