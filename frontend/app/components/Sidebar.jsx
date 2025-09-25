@@ -28,15 +28,17 @@ function SidebarHeader() {
 /**
  * ChatThreadItem Component
  *
- * A reusable component for individual chat thread links.
- * Demonstrates props usage: receives href and title from parent component.
- * This pattern allows the same component structure with different data.
+ * Now uses PROPS DESTRUCTURING for cleaner code! Key concepts:
+ * 1. DESTRUCTURING: Extract href and title directly from props
+ * 2. REQUIRED PROPS: No defaults since href and title are always needed
+ * 3. CLEANER CODE: Direct access to href and title instead of props.href
+ * 4. SELF-DOCUMENTING: Shows exactly which props this component expects
  */
-function ChatThreadItem(props) {
+function ChatThreadItem({ href, title }) {
   return (
     <li className="chat-thread-item">
-      <a href={props.href} className="chat-thread-link">
-        {props.title}
+      <a href={href} className="chat-thread-link">
+        {title}
       </a>
     </li>
   );
@@ -45,18 +47,19 @@ function ChatThreadItem(props) {
 /**
  * ChatThreadsList Component
  *
- * Now receives data via PROP DRILLING! This demonstrates:
- * 1. PROP DRILLING: Data flows Layout -> Sidebar -> ChatThreadsList
- * 2. COMPONENT REUSABILITY: Can work with any threads array passed as props
- * 3. DATA FLOW: Shows how data moves through multiple component layers
- * 4. CONSISTENT PATTERNS: Uses same props.data.map() pattern as ChatMessages
+ * Now uses DESTRUCTURING WITH SAFE DEFAULTS! Key concepts:
+ * 1. DESTRUCTURING: Extract threads directly from props object
+ * 2. DEFAULT VALUES: threads = [] prevents mapping over undefined
+ * 3. PROP DRILLING: Data still flows Layout -> Sidebar -> ChatThreadsList
+ * 4. ERROR PREVENTION: Component gracefully handles missing threads prop
+ * 5. CONSISTENT PATTERNS: Same destructuring pattern as ChatMessages
  */
-function ChatThreadsList(props) {
+function ChatThreadsList({ threads = [] }) {
   return (
     <nav className="chat-threads-list" aria-label="Chat threads">
       <ul>
-        {/* Using props.threads - data passed down through prop drilling! */}
-        {props.threads.map((thread) => (
+        {/* Using destructured threads with safe default! */}
+        {threads.map((thread) => (
           <ChatThreadItem
             key={thread.id}
             href={thread.href}
@@ -94,18 +97,19 @@ function SidebarFooter() {
 /**
  * Main Sidebar Component
  *
- * Now demonstrates PROP DRILLING - receiving props and passing them down:
- * 1. PROPS ACCEPTANCE: Receives 'threads' prop from Layout parent
- * 2. PROP DRILLING: Passes threads down to ChatThreadsList child
- * 3. INTERMEDIATE COMPONENT: Acts as bridge between Layout and ChatThreadsList
- * 4. COMPONENT COMPOSITION: Combines multiple components while managing data flow
+ * Now uses DESTRUCTURING for prop drilling! Key concepts:
+ * 1. DESTRUCTURING: Extract threads directly from props
+ * 2. PROP DRILLING: Still passes threads down to ChatThreadsList child
+ * 3. CLEANER CODE: Direct access to threads instead of props.threads
+ * 4. INTERMEDIATE COMPONENT: Acts as bridge between Layout and ChatThreadsList
+ * 5. CONSISTENT PATTERNS: Same destructuring approach throughout app
  */
-export default function Sidebar(props) {
+export default function Sidebar({ threads }) {
   return (
     <aside className="sidebar">
-      {/* Component composition with prop drilling */}
+      {/* Component composition with destructured prop drilling */}
       <SidebarHeader />
-      <ChatThreadsList threads={props.threads} />
+      <ChatThreadsList threads={threads} />
       <SidebarFooter />
     </aside>
   );

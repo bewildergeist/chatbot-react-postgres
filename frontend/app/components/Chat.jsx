@@ -12,14 +12,16 @@
 /**
  * Message Component
  *
- * A reusable component for displaying individual chat messages.
- * Accepts props to customize message type and uses props.children for message content.
- * https://react.dev/learn/passing-props-to-a-component#passing-jsx-as-children
+ * Now uses PROPS DESTRUCTURING with default values! Key concepts:
+ * 1. DESTRUCTURING: Extract specific props directly from the props object
+ * 2. DEFAULT VALUES: Provide fallback values if props are undefined
+ * 3. CLEANER CODE: No need to repeat "props." throughout the component
+ * 4. SELF-DOCUMENTING: Shows exactly which props the component expects
  */
-function Message(props) {
+function Message({ type = "user", children }) {
   return (
-    <div className={`message ${props.type}-message`}>
-      <div className="message-content">{props.children}</div>
+    <div className={`message ${type}-message`}>
+      <div className="message-content">{children}</div>
     </div>
   );
 }
@@ -27,18 +29,18 @@ function Message(props) {
 /**
  * ChatMessages Component
  *
- * Now this component receives data via PROPS! Key concepts:
- * 1. PROPS ACCEPTANCE: Component accepts a 'messages' prop from parent
- * 2. DATA FLOW: Data flows down from parent (Home) to child (ChatMessages)
- * 3. COMPONENT REUSABILITY: Can work with any messages array passed as props
- * 4. SEPARATION OF CONCERNS: Component focuses on rendering, parent manages data
- * 5. MAP() WITH PROPS: Uses props.messages instead of internal data
+ * Now uses DESTRUCTURING WITH DEFAULT VALUES for safety! Key concepts:
+ * 1. DESTRUCTURING: Extract messages directly from props object
+ * 2. DEFAULT VALUES: messages = [] prevents errors if prop is undefined
+ * 3. ERROR PREVENTION: No more "Cannot read property 'map' of undefined"
+ * 4. GRACEFUL DEGRADATION: Component renders empty list if no messages provided
+ * 5. CLEANER CODE: Direct access to messages instead of props.messages
  */
-function ChatMessages(props) {
+function ChatMessages({ messages = [] }) {
   return (
     <div className="chat-messages">
-      {/* Using props.messages - data comes from parent component! */}
-      {props.messages.map((message) => (
+      {/* Using destructured messages with safe default! */}
+      {messages.map((message) => (
         <Message key={message.id} type={message.type}>
           {message.content}
         </Message>
