@@ -128,20 +128,35 @@ function Sidebar() {
           </li>
         </ul>
       </nav>
-      {/* Sidebar footer */}
-      <div className="sidebar-footer">
-        <a href="/profile" className="user-profile">
-          <img
-            src="https://ui-avatars.com/api/?name=Batman&background=0D0D0D&color=fff&size=40"
-            alt="User avatar"
-            className="user-avatar"
-            width={30}
-            height={30}
-          />
-          <span className="user-name">Batman</span>
-        </a>
-      </div>
+      {/* Using our extracted SidebarFooter component */}
+      <SidebarFooter />
     </aside>
+  );
+}
+
+/**
+ * SidebarFooter Component
+ * 
+ * This component handles the user profile section at the bottom of the sidebar.
+ * Like SidebarHeader, this demonstrates:
+ * 1. Separation of concerns - footer logic is isolated
+ * 2. Component modularity - easy to modify or replace the footer independently
+ * 3. Consistent component patterns - following the same structure as other components
+ */
+function SidebarFooter() {
+  return (
+    <div className="sidebar-footer">
+      <a href="/profile" className="user-profile">
+        <img
+          src="https://ui-avatars.com/api/?name=Batman&background=0D0D0D&color=fff&size=40"
+          alt="User avatar"
+          className="user-avatar"
+          width={30}
+          height={30}
+        />
+        <span className="user-name">Batman</span>
+      </a>
+    </div>
   );
 }
 
