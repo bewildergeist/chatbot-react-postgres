@@ -28,28 +28,24 @@ function SidebarHeader() {
 /**
  * ChatThreadItem Component
  *
- * Now includes EVENT HANDLING! Key concepts:
- * 1. DESTRUCTURING: Extract id, href, and title from thread prop
- * 2. EVENT HANDLERS: onClick function that responds to user interactions
- * 3. CONSOLE LOGGING: Debugging technique to inspect event data
- * 4. OBJECT DESTRUCTURING: Clean way to pass all thread data
- * 5. PREVENT DEFAULT: Stop unwanted side effects from events
+ * Now uses CALLBACK FUNCTIONS for state updates! Key concepts:
+ * 1. DESTRUCTURING: Extract thread data and callback function
+ * 2. CALLBACK INVOCATION: Call parent function to trigger state updates
+ * 3. EVENT HANDLING: Still handle click events but now trigger real actions
+ * 4. STATE LIFTING: Component doesn't manage state, just triggers updates
+ * 5. UNIDIRECTIONAL DATA FLOW: Data flows down, events flow up
  */
-function ChatThreadItem({ thread }) {
+function ChatThreadItem({ thread, onDeleteThread }) {
   const { id, href, title } = thread;
 
   const handleDeleteClick = (event) => {
     // Prevent the click from bubbling up to parent elements
     event.stopPropagation();
     
-    // Log relevant information about the clicked thread
-    console.log('Delete button clicked for thread:', {
-      id: id,
-      title: title,
-      href: href,
-      element: event.target,
-      timestamp: new Date().toISOString()
-    });
+    // Call the callback function passed from parent to delete the thread
+    if (onDeleteThread) {
+      onDeleteThread(id);
+    }
   };
 
   return (
@@ -75,22 +71,23 @@ function ChatThreadItem({ thread }) {
 /**
  * ChatThreadsList Component
  *
- * Now uses DESTRUCTURING WITH SAFE DEFAULTS! Key concepts:
- * 1. DESTRUCTURING: Extract threads directly from props object
- * 2. DEFAULT VALUES: threads = [] prevents mapping over undefined
- * 3. PROP DRILLING: Data still flows Layout -> Sidebar -> ChatThreadsList
- * 4. ERROR PREVENTION: Component gracefully handles missing threads prop
- * 5. CONSISTENT PATTERNS: Same destructuring pattern as ChatMessages
+ * Now handles CALLBACK PROP DRILLING! Key concepts:
+ * 1. DESTRUCTURING: Extract both threads data and callback function
+ * 2. DEFAULT VALUES: Safe defaults for both props
+ * 3. CALLBACK FORWARDING: Pass callback down to individual thread items
+ * 4. PROP DRILLING CHAIN: Layout -> Sidebar -> ChatThreadsList -> ChatThreadItem
+ * 5. FUNCTION PROPS: onDeleteThread is a function passed as a prop
  */
-function ChatThreadsList({ threads = [] }) {
+function ChatThreadsList({ threads = [], onDeleteThread }) {
   return (
     <nav className="chat-threads-list" aria-label="Chat threads">
       <ul>
-        {/* Passing entire thread object for event handling */}
+        {/* Passing both thread data and delete callback to each item */}
         {threads.map((thread) => (
           <ChatThreadItem
             key={thread.id}
             thread={thread}
+            onDeleteThread={onDeleteThread}
           />
         ))}
       </ul>
@@ -124,19 +121,22 @@ function SidebarFooter() {
 /**
  * Main Sidebar Component
  *
- * Now uses DESTRUCTURING for prop drilling! Key concepts:
- * 1. DESTRUCTURING: Extract threads directly from props
- * 2. PROP DRILLING: Still passes threads down to ChatThreadsList child
- * 3. CLEANER CODE: Direct access to threads instead of props.threads
- * 4. INTERMEDIATE COMPONENT: Acts as bridge between Layout and ChatThreadsList
- * 5. CONSISTENT PATTERNS: Same destructuring approach throughout app
+ * Now handles CALLBACK PROP DRILLING! Key concepts:
+ * 1. DESTRUCTURING: Extract both data and callback functions
+ * 2. CALLBACK DRILLING: Pass functions down through component hierarchy
+ * 3. INTERMEDIATE COMPONENT: Forwards callbacks without using them directly
+ * 4. SEPARATION OF CONCERNS: Sidebar doesn't handle delete logic
+ * 5. PROP FORWARDING: Clean pattern for passing props to children
  */
-export default function Sidebar({ threads }) {
+export default function Sidebar({ threads, onDeleteThread }) {
   return (
     <aside className="sidebar">
-      {/* Component composition with destructured prop drilling */}
+      {/* Component composition with both data and callback drilling */}
       <SidebarHeader />
-      <ChatThreadsList threads={threads} />
+      <ChatThreadsList 
+        threads={threads} 
+        onDeleteThread={onDeleteThread}
+      />
       <SidebarFooter />
     </aside>
   );
