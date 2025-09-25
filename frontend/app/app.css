@@ -1,3 +1,24 @@
+/* CSS Variables */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9f9f9;
+  --bg-hover: #f0f0f0;
+  --bg-message-user: #f1f3f5;
+  --bg-message-bot: transparent;
+  --bg-button-primary: #4b5563;
+  --bg-button-primary-hover: #374151;
+  --bg-button-disabled: #d1d5db;
+
+  --text-primary: #0d0d0d;
+  --text-button: #ffffff;
+
+  --border-light: #e5e5e5;
+  --border-medium: #d1d5db;
+  --border-focus: #6b7280;
+
+  --shadow-focus: rgba(107, 114, 128, 0.1);
+}
+
 /* Reset and base styles */
 * {
   margin: 0;
@@ -22,8 +43,8 @@ body {
 
 .sidebar {
   width: 260px;
-  background-color: rgb(249, 249, 249);
-  border-right: 1px solid #e5e5e5;
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-light);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -41,20 +62,20 @@ body {
   display: flex;
   align-items: center;
   gap: 1em;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--border-light);
 }
 .chatbot-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #0d0d0d;
+  color: var(--text-primary);
   flex-grow: 1;
 }
 .new-chat-btn {
   display: flex;
   align-items: center;
   background: transparent;
-  color: #0d0d0d;
-  border: 1px solid #d1d5db;
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
   border-radius: 6px;
   padding: 0.5rem;
   font-size: 0.875rem;
@@ -63,7 +84,7 @@ body {
   transition: background 0.1s ease;
 }
 .new-chat-btn:hover {
-  background: #f0f0f0;
+  background: var(--bg-hover);
 }
 
 /* Chat threads list */
@@ -88,7 +109,7 @@ body {
   padding: 0.75rem;
   text-align: left;
   font-size: 0.875rem;
-  color: #0d0d0d;
+  color: var(--text-primary);
   text-decoration: none;
   cursor: pointer;
   transition: background 0.1s ease;
@@ -97,12 +118,12 @@ body {
   white-space: nowrap;
 }
 .chat-thread-link:hover {
-  background: #f0f0f0;
+  background: var(--bg-hover);
 }
 
 /* Sidebar footer */
 .sidebar-footer {
-  border-top: 1px solid #e5e5e5;
+  border-top: 1px solid var(--border-light);
 }
 .user-profile {
   text-decoration: none;
@@ -115,7 +136,7 @@ body {
   transition: background 0.1s ease;
 }
 .user-profile:hover {
-  background: #f0f0f0;
+  background: var(--bg-hover);
 }
 .user-avatar {
   border-radius: 50%;
@@ -124,7 +145,7 @@ body {
 .user-name {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #0d0d0d;
+  color: var(--text-primary);
 }
 
 /* Chat interface styles */
@@ -170,15 +191,15 @@ body {
 }
 
 .user-message .message-content {
-  background-color: #f1f3f5;
-  color: #0d0d0d;
-  border: 1px solid #e5e5e5;
+  background-color: var(--bg-message-user);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
   border-bottom-right-radius: 4px;
 }
 
 .bot-message .message-content {
-  background-color: transparent;
-  color: #0d0d0d;
+  background-color: var(--bg-message-bot);
+  color: var(--text-primary);
   border: none;
   border-bottom-left-radius: 4px;
 }
@@ -186,8 +207,8 @@ body {
 /* Chat input area */
 .chat-input-container {
   padding: 1rem;
-  border-top: 1px solid #e5e5e5;
-  background: white;
+  border-top: 1px solid var(--border-light);
+  background: var(--bg-primary);
   position: sticky;
   bottom: 0;
 }
@@ -201,7 +222,7 @@ body {
 
 .chat-input {
   flex: 1;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-medium);
   border-radius: 12px;
   padding: 0.75rem 1rem;
   font-size: 0.9rem;
@@ -213,13 +234,13 @@ body {
 }
 
 .chat-input:focus {
-  border-color: #6b7280;
-  box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.1);
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px var(--shadow-focus);
 }
 
 .send-button {
-  background: #4b5563;
-  color: white;
+  background: var(--bg-button-primary);
+  color: var(--text-button);
   border: none;
   border-radius: 12px;
   padding: 0.75rem 1.5rem;
@@ -231,10 +252,10 @@ body {
 }
 
 .send-button:hover {
-  background: #374151;
+  background: var(--bg-button-primary-hover);
 }
 
 .send-button:disabled {
-  background: #d1d5db;
+  background: var(--bg-button-disabled);
   cursor: not-allowed;
 }
