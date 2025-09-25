@@ -47,7 +47,7 @@ function ChatMessages() {
 
       <Message
         type="bot"
-        content="Nested routes in React Router v7 allow you to create hierarchical UI structures. You define parent routes that contain child routes, and use the <Outlet /> component to render child components. The parent route acts as a layout component that wraps its children."
+        content="Nested routes in React Router v7 allow you to create hierarchical UI structures. You define parent routes that contain child routes, and use the `<Outlet />` component to render child components. The parent route acts as a layout component that wraps its children."
       />
 
       <Message
@@ -77,7 +77,7 @@ function ChatMessages() {
 
       <Message
         type="bot"
-        content="React Router v7 provides excellent data loading capabilities through loader functions. You can define a loader function in your route component that runs before the component renders, ensuring your data is available immediately. You can access the loaded data using the useLoaderData() hook within your component."
+        content="React Router v7 provides excellent data loading capabilities through loader functions. You can define a loader function in your route component that runs before the component renders, ensuring your data is available immediately. You can access the loaded data using the `useLoaderData()` hook within your component."
       />
     </div>
   );
