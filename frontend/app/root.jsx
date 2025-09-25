@@ -33,6 +33,10 @@ export function Layout({ children }) {
   );
 }
 
+export function HydrateFallback() {
+  return <div>Loading...</div>;
+}
+
 export default function App() {
   return <Outlet />;
 }
