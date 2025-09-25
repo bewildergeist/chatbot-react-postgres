@@ -28,18 +28,29 @@ function SidebarHeader() {
 /**
  * ChatThreadItem Component
  *
- * Now uses PROPS DESTRUCTURING for cleaner code! Key concepts:
+ * Now includes INTERACTIVE ELEMENTS! Key concepts:
  * 1. DESTRUCTURING: Extract href and title directly from props
- * 2. REQUIRED PROPS: No defaults since href and title are always needed
- * 3. CLEANER CODE: Direct access to href and title instead of props.href
- * 4. SELF-DOCUMENTING: Shows exactly which props this component expects
+ * 2. BUTTON ELEMENTS: Proper HTML semantics for interactive actions
+ * 3. ACCESSIBILITY: ARIA labels and proper focus management
+ * 4. EVENT HANDLING: onClick handlers for user interactions
+ * 5. CSS HOVER STATES: Show/hide elements based on user interaction
  */
 function ChatThreadItem({ href, title }) {
   return (
     <li className="chat-thread-item">
-      <a href={href} className="chat-thread-link">
-        {title}
-      </a>
+      <div className="chat-thread-item-content">
+        <a href={href} className="chat-thread-link">
+          {title}
+        </a>
+        <button
+          className="delete-thread-btn"
+          aria-label={`Delete thread: ${title}`}
+          title="Delete this conversation"
+          type="button"
+        >
+          &times;
+        </button>
+      </div>
     </li>
   );
 }

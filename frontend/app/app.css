@@ -100,25 +100,69 @@ body {
 .chat-thread-item {
   margin-bottom: 0.25rem;
 }
+
+/* Chat thread item container with delete button */
+.chat-thread-item-content {
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+  transition: background 0.1s ease;
+  position: relative;
+}
+.chat-thread-item-content:hover {
+  background: var(--bg-hover);
+}
+
 .chat-thread-link {
   display: block;
-  width: 100%;
+  flex: 1;
   background: transparent;
   border: none;
-  border-radius: 6px;
   padding: 0.75rem;
   text-align: left;
   font-size: 0.875rem;
   color: var(--text-primary);
   text-decoration: none;
   cursor: pointer;
-  transition: background 0.1s ease;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.chat-thread-link:hover {
-  background: var(--bg-hover);
+
+/* Delete button - hidden by default, shown on hover */
+.delete-thread-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease, background 0.1s ease;
+}
+
+/* Show delete button on thread item hover */
+.chat-thread-item-content:hover .delete-thread-btn {
+  opacity: 1;
+}
+
+/* Delete button hover state */
+.delete-thread-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* Focus styles for accessibility */
+.delete-thread-btn:focus {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+  opacity: 1;
 }
 
 /* Sidebar footer */
