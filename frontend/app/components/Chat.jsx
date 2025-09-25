@@ -29,7 +29,7 @@ function Message(props) {
  *
  * Now this component receives data via PROPS! Key concepts:
  * 1. PROPS ACCEPTANCE: Component accepts a 'messages' prop from parent
- * 2. DATA FLOW: Data flows down from parent (Home) to child (ChatMessages)  
+ * 2. DATA FLOW: Data flows down from parent (Home) to child (ChatMessages)
  * 3. COMPONENT REUSABILITY: Can work with any messages array passed as props
  * 4. SEPARATION OF CONCERNS: Component focuses on rendering, parent manages data
  * 5. MAP() WITH PROPS: Uses props.messages instead of internal data
