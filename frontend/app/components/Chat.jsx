@@ -56,22 +56,40 @@ function ChatMessages({ messages = [] }) {
  * ChatInput Component
  *
  * Form component that handles user input for sending messages.
- * Now demonstrates STATE MANAGEMENT and EVENT HANDLING:
- * 1. HOOKS: Using useState to manage component state
- * 2. EVENT HANDLERS: onSubmit handler for form submission
- * 3. CONTROLLED STATE: Managing isSubmitting state
- * 4. FORM ELEMENTS: Proper semantic HTML with form element
+ * Now demonstrates CALLBACK PROPS and UNCONTROLLED FORMS:
+ * 1. PROPS DESTRUCTURING: Receiving callback function from parent
+ * 2. CALLBACK PROPS: Using parent's function to update shared state
+ * 3. UNCONTROLLED FORMS: Reading form data on submission
+ * 4. FORM VALIDATION: Basic empty message validation
+ * 5. STATE MANAGEMENT: Managing local isSubmitting state
  */
-function ChatInput() {
+function ChatInput({ onAddMessage }) {
   // LOCAL STATE: Managing form submission state
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  // EVENT HANDLER: Handle form submission
+  // EVENT HANDLER: Handle form submission with callback
   const handleSubmit = async (event) => {
     event.preventDefault(); // Prevent default form submission
-    
+
+    // Get form data using FormData API (uncontrolled approach)
+    const formData = new FormData(event.target);
+    const message = formData.get("message").trim();
+
+    // Basic validation
+    if (!message) {
+      return; // Don't submit empty messages
+    }
+
     setIsSubmitting(true);
-    
+
+    // Call parent's callback function to add message
+    if (onAddMessage) {
+      onAddMessage(message);
+    }
+
+    // Clear the form
+    event.target.reset();
+
     // Simulate async operation (like API call)
     setTimeout(() => {
       setIsSubmitting(false);
@@ -82,15 +100,12 @@ function ChatInput() {
     <div className="chat-input-container">
       <form className="chat-input-wrapper" onSubmit={handleSubmit}>
         <textarea
+          name="message"
           className="chat-input"
           placeholder="Type your message here..."
           rows="1"
         />
-        <button 
-          className="send-button" 
-          type="submit"
-          disabled={isSubmitting}
-        >
+        <button className="send-button" type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Sending..." : "Send"}
         </button>
       </form>
