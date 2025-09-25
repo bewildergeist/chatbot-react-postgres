@@ -1,3 +1,5 @@
+import React from "react";
+
 /**
  * Chat Components
  *
@@ -7,6 +9,7 @@
  * 2. COMPONENT HIERARCHY: Message -> ChatMessages -> ChatInput
  * 3. EXPORT PATTERNS: Multiple named exports from a single file
  * 4. REUSABLE MODULES: Components that can be imported anywhere in the app
+ * 5. HOOKS USAGE: Components now use React hooks for state management
  */
 
 /**
@@ -53,21 +56,44 @@ function ChatMessages({ messages = [] }) {
  * ChatInput Component
  *
  * Form component that handles user input for sending messages.
- * Contains textarea and send button for message composition.
+ * Now demonstrates STATE MANAGEMENT and EVENT HANDLING:
+ * 1. HOOKS: Using useState to manage component state
+ * 2. EVENT HANDLERS: onSubmit handler for form submission
+ * 3. CONTROLLED STATE: Managing isSubmitting state
+ * 4. FORM ELEMENTS: Proper semantic HTML with form element
  */
 function ChatInput() {
+  // LOCAL STATE: Managing form submission state
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  // EVENT HANDLER: Handle form submission
+  const handleSubmit = async (event) => {
+    event.preventDefault(); // Prevent default form submission
+    
+    setIsSubmitting(true);
+    
+    // Simulate async operation (like API call)
+    setTimeout(() => {
+      setIsSubmitting(false);
+    }, 1000);
+  };
+
   return (
     <div className="chat-input-container">
-      <div className="chat-input-wrapper">
+      <form className="chat-input-wrapper" onSubmit={handleSubmit}>
         <textarea
           className="chat-input"
           placeholder="Type your message here..."
           rows="1"
         />
-        <button className="send-button" type="button">
-          Send
+        <button 
+          className="send-button" 
+          type="submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Sending..." : "Send"}
         </button>
-      </div>
+      </form>
     </div>
   );
 }
