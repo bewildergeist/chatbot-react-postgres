@@ -1,24 +1,37 @@
 import { Outlet } from "react-router";
 
 /**
+ * SidebarHeader Component
+ * 
+ * This component handles the top section of the sidebar with the title and new chat button.
+ * Breaking this into its own component demonstrates:
+ * 1. Single responsibility - this component only handles the header area
+ * 2. Component reusability - could be used in other sidebar contexts
+ * 3. Easier testing and maintenance - smaller, focused components are easier to work with
+ */
+function SidebarHeader() {
+  return (
+    <div className="sidebar-header">
+      <h2 className="chatbot-title">Chatbot</h2>
+      <a href="/chat/new" className="new-chat-btn">
+        + New
+      </a>
+    </div>
+  );
+}
+
+/**
  * Sidebar Component
  * 
- * This is our first extracted component! Notice how we've taken all the sidebar
- * JSX and moved it into its own function component. This demonstrates:
- * 1. Component creation - functions that return JSX
- * 2. Component reusability - we could use this Sidebar elsewhere
- * 3. Separation of concerns - the sidebar logic is now isolated
+ * Now our Sidebar component uses the SidebarHeader component inside it.
+ * This shows component nesting and composition - components can contain other components!
+ * Notice how the Sidebar is becoming more readable as we break it into logical pieces.
  */
 function Sidebar() {
   return (
     <aside className="sidebar">
-      {/* Sidebar header */}
-      <div className="sidebar-header">
-        <h2 className="chatbot-title">Chatbot</h2>
-        <a href="/chat/new" className="new-chat-btn">
-          + New
-        </a>
-      </div>
+      {/* Using our extracted SidebarHeader component */}
+      <SidebarHeader />
       {/* Chat threads list */}
       <nav className="chat-threads-list" aria-label="Chat threads">
         <ul>
