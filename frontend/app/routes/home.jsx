@@ -89,25 +89,43 @@ function ChatMessages() {
   );
 }
 
+/**
+ * ChatInput Component
+ * 
+ * This component handles the chat input form with textarea and send button.
+ * It demonstrates:
+ * 1. FORM COMPONENTS: Extracting form-related UI into focused components
+ * 2. USER INTERACTION: Organizing input and button elements together
+ * 3. COMPONENT BOUNDARIES: Clear separation between display and input areas
+ * 
+ * This component is perfect for future enhancements like:
+ * - Adding state for controlled inputs
+ * - Event handlers for sending messages
+ * - Form validation and submission logic
+ */
+function ChatInput() {
+  return (
+    <div className="chat-input-container">
+      <div className="chat-input-wrapper">
+        <textarea
+          className="chat-input"
+          placeholder="Type your message here..."
+          rows="1"
+        />
+        <button className="send-button" type="button">
+          Send
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   return (
     <main className="chat-container">
-      {/* Using our extracted ChatMessages component */}
+      {/* Clean component composition: messages display + input form */}
       <ChatMessages />
-
-      {/* Chat input area */}
-      <div className="chat-input-container">
-        <div className="chat-input-wrapper">
-          <textarea
-            className="chat-input"
-            placeholder="Type your message here..."
-            rows="1"
-          />
-          <button className="send-button" type="button">
-            Send
-          </button>
-        </div>
-      </div>
+      <ChatInput />
     </main>
   );
 }
