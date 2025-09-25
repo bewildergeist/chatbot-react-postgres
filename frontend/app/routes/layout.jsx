@@ -21,109 +21,94 @@ function SidebarHeader() {
 }
 
 /**
+ * ChatThreadItem Component
+ * 
+ * This is our first component that uses PROPS! Props are how we pass data
+ * from parent components to child components. Notice:
+ * 1. The function parameter `props` contains data passed from the parent
+ * 2. We use props.href and props.title to customize each thread item
+ * 3. This makes the component reusable - same structure, different data
+ */
+function ChatThreadItem(props) {
+  return (
+    <li className="chat-thread-item">
+      <a href={props.href} className="chat-thread-link">
+        {props.title}
+      </a>
+    </li>
+  );
+}
+
+/**
  * ChatThreadsList Component
  * 
- * This component manages the list of chat threads in the navigation.
- * It demonstrates:
- * 1. Managing a larger section of UI as a separate component
- * 2. Keeping the navigation logic isolated and testable
- * 3. Preparing for future features like dynamic thread lists and props
+ * Now this component uses multiple instances of ChatThreadItem, passing
+ * different props to each one. This demonstrates:
+ * 1. Component reusability - same component, different data
+ * 2. Props passing - how parent components send data to children
+ * 3. Clean, declarative code - each thread is clearly defined
  */
 function ChatThreadsList() {
   return (
     <nav className="chat-threads-list" aria-label="Chat threads">
       <ul>
-        <li className="chat-thread-item">
-          <a
-            href="/chat/how-to-learn-programming"
-            className="chat-thread-link"
-          >
-            How to learn programming?
-          </a>
-        </li>
-        <li className="chat-thread-item">
-          <a href="/chat/best-pizza-toppings" className="chat-thread-link">
-            What are the best pizza toppings?
-          </a>
-        </li>
-        <li className="chat-thread-item">
-          <a
-            href="/chat/explain-quantum-physics"
-            className="chat-thread-link"
-          >
-            Can you explain quantum physics?
-          </a>
-        </li>
-        <li className="chat-thread-item">
-          <a
-            href="/chat/morning-routine-ideas"
-            className="chat-thread-link"
-          >
-            Help me create a morning routine
-          </a>
-        </li>
-        <li className="chat-thread-item">
-          <a
-            href="/chat/weekend-activity-suggestions"
-            className="chat-thread-link"
-          >
-            What should I do this weekend?
-          </a>
-        </li>
-        <li className="chat-thread-item">
-          <a href="/chat/why-sky-blue" className="chat-thread-link">
-            Why is the sky blue?
-          </a>
-        </li>
-        <li className="chat-thread-item">
-          <a href="/chat/learn-new-language" className="chat-thread-link">
-            How do I learn a new language?
-          </a>
-        </li>
-        <li className="chat-thread-item">
-          <a href="/chat/meaning-of-life" className="chat-thread-link">
-            What's the meaning of life?
-          </a>
-        </li>
-        <li className="chat-thread-item">
-          <a href="/chat/funny-joke-please" className="chat-thread-link">
-            Tell me a funny joke
-          </a>
-        </li>
-        <li className="chat-thread-item">
-          <a href="/chat/healthy-dinner-ideas" className="chat-thread-link">
-            What's a healthy dinner idea?
-          </a>
-        </li>
-        <li className="chat-thread-item">
-          <a
-            href="/chat/good-book-recommendations"
-            className="chat-thread-link"
-          >
-            Recommend me a good book
-          </a>
-        </li>
-        <li className="chat-thread-item">
-          <a
-            href="/chat/creative-writing-prompt"
-            className="chat-thread-link"
-          >
-            Give me a creative writing prompt
-          </a>
-        </li>
-        <li className="chat-thread-item">
-          <a href="/chat/fix-slow-computer" className="chat-thread-link">
-            My computer is slow, help?
-          </a>
-        </li>
-        <li className="chat-thread-item">
-          <a
-            href="/chat/interesting-history-fact"
-            className="chat-thread-link"
-          >
-            Tell me an interesting history fact
-          </a>
-        </li>
+        {/* Each ChatThreadItem gets different props for href and title */}
+        <ChatThreadItem 
+          href="/chat/how-to-learn-programming" 
+          title="How to learn programming?" 
+        />
+        <ChatThreadItem 
+          href="/chat/best-pizza-toppings" 
+          title="What are the best pizza toppings?" 
+        />
+        <ChatThreadItem 
+          href="/chat/explain-quantum-physics" 
+          title="Can you explain quantum physics?" 
+        />
+        <ChatThreadItem 
+          href="/chat/morning-routine-ideas" 
+          title="Help me create a morning routine" 
+        />
+        <ChatThreadItem 
+          href="/chat/weekend-activity-suggestions" 
+          title="What should I do this weekend?" 
+        />
+        <ChatThreadItem 
+          href="/chat/why-sky-blue" 
+          title="Why is the sky blue?" 
+        />
+        <ChatThreadItem 
+          href="/chat/learn-new-language" 
+          title="How do I learn a new language?" 
+        />
+        <ChatThreadItem 
+          href="/chat/meaning-of-life" 
+          title="What's the meaning of life?" 
+        />
+        <ChatThreadItem 
+          href="/chat/funny-joke-please" 
+          title="Tell me a funny joke" 
+        />
+        <ChatThreadItem 
+          href="/chat/healthy-dinner-ideas" 
+          title="What's a healthy dinner idea?" 
+        />
+        <ChatThreadItem 
+          href="/chat/good-book-recommendations" 
+          title="Recommend me a good book" 
+        />
+        <ChatThreadItem 
+          href="/chat/creative-writing-prompt" 
+          title="Give me a creative writing prompt" 
+        />
+        <ChatThreadItem 
+          href="/chat/fix-slow-computer" 
+          title="My computer is slow, help?" 
+        />
+        <ChatThreadItem 
+          href="/chat/interesting-history-fact" 
+          title="Tell me an interesting history fact" 
+        />
       </ul>
     </nav>
   );
