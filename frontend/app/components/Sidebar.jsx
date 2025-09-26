@@ -1,3 +1,5 @@
+import React from "react";
+
 /**
  * Sidebar Components
  *
@@ -6,6 +8,7 @@
  * 2. Import/export patterns for sharing components
  * 3. Component composition and hierarchy
  * 4. File organization for better project structure
+ * 5. CONTROLLED COMPONENTS: Components that manage form input state
  */
 
 /**
@@ -71,19 +74,45 @@ function ChatThreadItem({ thread, onDeleteThread }) {
 /**
  * ChatThreadsList Component
  *
- * Now handles CALLBACK PROP DRILLING! Key concepts:
- * 1. DESTRUCTURING: Extract both threads data and callback function
- * 2. DEFAULT VALUES: Safe defaults for both props
- * 3. CALLBACK FORWARDING: Pass callback down to individual thread items
- * 4. PROP DRILLING CHAIN: Layout -> Sidebar -> ChatThreadsList -> ChatThreadItem
- * 5. FUNCTION PROPS: onDeleteThread is a function passed as a prop
+ * Now demonstrates CONTROLLED COMPONENTS and COMPUTED STATE! Key concepts:
+ * 1. CONTROLLED COMPONENTS: Input value managed by React state
+ * 2. COMPUTED STATE: Filtering data without additional useState
+ * 3. ARRAY METHODS: Using filter() to transform data
+ * 4. LOCAL STATE: Managing search input with useState
+ * 5. CASE-INSENSITIVE SEARCH: Using toLowerCase() for better UX
+ * 6. REAL-TIME FILTERING: Updates as user types
  */
 function ChatThreadsList({ threads = [], onDeleteThread }) {
+  // LOCAL STATE: Managing search input value (controlled component)
+  const [searchValue, setSearchValue] = React.useState("");
+
+  // EVENT HANDLER: Update search value as user types
+  const handleSearchChange = (event) => {
+    setSearchValue(event.target.value);
+  };
+
+  // COMPUTED STATE: Filter threads based on search value
+  // This is NOT stored in state - it's computed on every render
+  const filteredThreads = threads.filter((thread) =>
+    thread.title.toLowerCase().includes(searchValue.toLowerCase()),
+  );
+
   return (
     <nav className="chat-threads-list" aria-label="Chat threads">
+      {/* Search input - CONTROLLED COMPONENT */}
+      <div className="search-container">
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Search conversations..."
+          value={searchValue}
+          onChange={handleSearchChange}
+        />
+      </div>
+
       <ul>
-        {/* Passing both thread data and delete callback to each item */}
-        {threads.map((thread) => (
+        {/* Render filtered threads instead of all threads */}
+        {filteredThreads.map((thread) => (
           <ChatThreadItem
             key={thread.id}
             thread={thread}
