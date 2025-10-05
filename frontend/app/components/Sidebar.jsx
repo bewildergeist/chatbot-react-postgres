@@ -1,4 +1,5 @@
 import React from "react";
+import { href, Link } from "react-router";
 
 /**
  * Sidebar Components
@@ -9,21 +10,27 @@ import React from "react";
  * 3. Component composition and hierarchy
  * 4. File organization for better project structure
  * 5. CONTROLLED COMPONENTS: Components that manage form input state
+ * 6. CLIENT-SIDE NAVIGATION: Using Link for faster page transitions
  */
 
 /**
  * SidebarHeader Component
  *
  * Handles the top section of the sidebar with title and new chat button.
- * This component demonstrates single responsibility and reusability.
+ * Now uses React Router's Link component for client-side navigation.
+ *
+ * Key concepts:
+ * 1. LINK COMPONENT: Enables client-side routing without full page reload
+ * 2. FASTER NAVIGATION: No server roundtrip, instant UI updates
+ * 3. SPA BEHAVIOR: Maintains application state during navigation
  */
 function SidebarHeader() {
   return (
     <div className="sidebar-header">
       <h2 className="chatbot-title">Chatbot</h2>
-      <a href="/chat/new" className="new-chat-btn">
+      <Link to="/chat/new" className="new-chat-btn">
         + New
-      </a>
+      </Link>
     </div>
   );
 }
@@ -31,15 +38,16 @@ function SidebarHeader() {
 /**
  * ChatThreadItem Component
  *
- * Now uses CALLBACK FUNCTIONS for state updates! Key concepts:
+ * Now uses CALLBACK FUNCTIONS and CLIENT-SIDE NAVIGATION! Key concepts:
  * 1. DESTRUCTURING: Extract thread data and callback function
  * 2. CALLBACK INVOCATION: Call parent function to trigger state updates
  * 3. EVENT HANDLING: Still handle click events but now trigger real actions
  * 4. STATE LIFTING: Component doesn't manage state, just triggers updates
  * 5. UNIDIRECTIONAL DATA FLOW: Data flows down, events flow up
+ * 6. LINK COMPONENT: Uses React Router's Link for smooth navigation
  */
 function ChatThreadItem({ thread, onDeleteThread }) {
-  const { id, href, title } = thread;
+  const { id, title } = thread;
 
   const handleDeleteClick = (event) => {
     // Prevent the click from bubbling up to parent elements
@@ -54,9 +62,12 @@ function ChatThreadItem({ thread, onDeleteThread }) {
   return (
     <li className="chat-thread-item">
       <div className="chat-thread-item-content">
-        <a href={href} className="chat-thread-link">
+        <Link
+          to={href("/chat/:threadId", { threadId: id })}
+          className="chat-thread-link"
+        >
           {title}
-        </a>
+        </Link>
         <button
           className="delete-thread-btn"
           aria-label={`Delete thread: ${title}`}
