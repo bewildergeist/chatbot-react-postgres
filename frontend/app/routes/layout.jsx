@@ -1,96 +1,95 @@
-import { Outlet } from "react-router";
-import { useState } from "react";
+import { Outlet, useLoaderData } from "react-router";
 import Sidebar from "../components/Sidebar.jsx";
 
 /**
- * INITIAL DATA FOR STATE
+ * CLIENT LOADER FUNCTION
  *
- * Moving from static to dynamic data demonstrates:
- * 1. STATE INITIALIZATION: Defining initial data for useState
- * 2. DATA IMMUTABILITY: How React state should be updated immutably
- * 3. COMPONENT LIFECYCLE: Data that changes over component lifetime
- * 4. MODULE SCOPE vs COMPONENT SCOPE: Where different data belongs
+ * Loads the list of chat threads before the layout renders.
+ * Key concepts:
+ * 1. PARENT ROUTE LOADER: Runs before any child route loaders
+ * 2. SHARED DATA: Data is available to this component and can be accessed by children
+ * 3. SIMULATED API CALL: We add a delay to mimic fetching from a database
+ * 4. MOCK DATA: Returns static data that will later come from Supabase
+ *
+ * This loader runs:
+ * - On initial page load
+ * - When navigating to any route under this layout
+ * - When React Router revalidates (after mutations)
  */
-const initialThreads = [
-  {
-    id: 1,
-    title: "How to learn programming?",
-  },
-  {
-    id: 2,
-    title: "What are the best pizza toppings?",
-  },
-  {
-    id: 3,
-    title: "Can you explain quantum physics?",
-  },
-  {
-    id: 4,
-    title: "Help me create a morning routine",
-  },
-  {
-    id: 5,
-    title: "What should I do this weekend?",
-  },
-  { id: 6, title: "Why is the sky blue?" },
-  {
-    id: 7,
-    title: "How do I learn a new language?",
-  },
-  {
-    id: 8,
-    title: "What's the meaning of life?",
-  },
-  { id: 9, title: "Tell me a funny joke" },
-  {
-    id: 10,
-    title: "What's a healthy dinner idea?",
-  },
-  {
-    id: 11,
-    title: "Recommend me a good book",
-  },
-  {
-    id: 12,
-    title: "Give me a creative writing prompt",
-  },
-  {
-    id: 13,
-    title: "My computer is slow, help?",
-  },
-  {
-    id: 14,
-    title: "Tell me an interesting history fact",
-  },
-];
+export async function clientLoader() {
+  // Simulate network delay (like calling an API)
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  // Mock thread data - later this will come from Supabase
+  const mockThreads = [
+    {
+      id: "1",
+      title: "How to learn programming?",
+    },
+    {
+      id: "2",
+      title: "What are the best pizza toppings?",
+    },
+    {
+      id: "3",
+      title: "Can you explain quantum physics?",
+    },
+    {
+      id: "4",
+      title: "Help me create a morning routine",
+    },
+    {
+      id: "5",
+      title: "What should I do this weekend?",
+    },
+    {
+      id: "6",
+      title: "Why is the sky blue?",
+    },
+    {
+      id: "7",
+      title: "How do I learn a new language?",
+    },
+    {
+      id: "8",
+      title: "What's the meaning of life?",
+    },
+    {
+      id: "9",
+      title: "Tell me a funny joke",
+    },
+    {
+      id: "10",
+      title: "What's a healthy dinner idea?",
+    },
+  ];
+
+  return { threads: mockThreads };
+}
 
 /**
  * Layout Component
  *
- * Now demonstrates STATE MANAGEMENT and CALLBACK PATTERNS:
- * 1. USESTATE HOOK: Managing dynamic data that changes over time
- * 2. STATE UPDATES: Immutable updates using array filter method
- * 3. CALLBACK PROPS: Passing functions down to child components
- * 4. DATA FLOW: State updates flow up, data flows down
- * 5. COMPONENT COMMUNICATION: Parent-child communication via callbacks
+ * Now uses DATA LOADING instead of local state!
+ *
+ * Key concepts:
+ * 1. useLoaderData() HOOK: Accesses data from clientLoader
+ * 2. NO STATE MANAGEMENT: Data comes from loader, not useState
+ * 3. LAYOUT PATTERN: Wraps child routes with consistent UI (sidebar)
+ * 4. OUTLET: Renders the matched child route component
  */
 export default function Layout() {
-  // STATE: threads is now dynamic data that can change!
-  const [threads, setThreads] = useState(initialThreads);
+  // Access threads data from the loader
+  const { threads } = useLoaderData();
 
-  // CALLBACK FUNCTION: Handle deleting a thread by ID
+  // Delete functionality will be re-implemented with clientAction later
   const deleteThread = (threadId) => {
-    console.log("Layout: Deleting thread with ID:", threadId);
-
-    // IMMUTABLE UPDATE: Create new array without the deleted thread
-    setThreads((currentThreads) =>
-      currentThreads.filter((thread) => thread.id !== threadId),
-    );
+    console.log("Delete thread:", threadId);
+    console.log("(Mutations will be implemented in the next phase)");
   };
 
   return (
     <div className="app-layout">
-      {/* Passing both data and callbacks via prop drilling */}
       <Sidebar threads={threads} onDeleteThread={deleteThread} />
       <main className="main-content">
         <Outlet />
