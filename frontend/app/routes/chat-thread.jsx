@@ -71,6 +71,54 @@ export async function clientLoader({ params }) {
 }
 
 /**
+ * CLIENT ACTION FUNCTION
+ *
+ * Handles form submissions to create new messages.
+ * Key concepts:
+ * 1. FORM DATA: Extract data from form submission
+ * 2. POST REQUEST: Send data to Supabase to create new message
+ * 3. AUTOMATIC REVALIDATION: React Router re-runs loader after action completes
+ * 4. OPTIMISTIC UI: Form clears immediately, data refreshes automatically
+ *
+ * The action runs:
+ * - When a Form with method="post" is submitted
+ * - Before the loader re-runs (automatic revalidation)
+ */
+export async function clientAction({ params, request }) {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+  // Extract form data from the request
+  const formData = await request.formData();
+  const content = formData.get("message");
+
+  // Create the message object
+  const newMessage = {
+    thread_id: params.threadId,
+    type: "user",
+    content: content,
+  };
+
+  // POST to Supabase to create the message
+  const response = await fetch(`${supabaseUrl}/rest/v1/messages`, {
+    method: "POST",
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(newMessage),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to create message: ${response.status}`);
+  }
+
+  // Return success - loader will automatically revalidate
+  return { success: true };
+}
+
+/**
  * Chat Thread Route Component
  *
  * Displays a conversation thread with messages from the database.
@@ -85,20 +133,13 @@ export default function ChatThread() {
   // Access the thread and messages data from the loader
   const { thread, messages } = useLoaderData();
 
-  // For now, we keep the addMessage handler but it won't persist
-  // This will be replaced with clientAction in a later step
-  const addMessage = (content) => {
-    console.log("Message submitted:", content);
-    console.log("(Data mutations will be implemented in the next phase)");
-  };
-
   return (
     <main className="chat-container">
       <div className="chat-thread-header">
         <h2>{thread.title}</h2>
       </div>
       <ChatMessages messages={messages} />
-      <ChatInput onAddMessage={addMessage} />
+      <ChatInput />
     </main>
   );
 }
