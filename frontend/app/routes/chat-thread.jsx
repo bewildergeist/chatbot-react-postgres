@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useParams } from "react-router";
 import { ChatMessages, ChatInput } from "../components/Chat.jsx";
 
 /**
@@ -24,16 +25,16 @@ const defaultMessages = [
  * Chat Thread Route Component
  *
  * This route displays an individual chat conversation thread.
- * Each thread is identified by a unique ID in the URL.
+ * Now uses useParams() to access the threadId from the URL!
  *
  * Key concepts:
- * 1. DYNAMIC ROUTE: The threadId comes from the URL parameter
- * 2. PLACEHOLDER DATA: Using mock data until we add data loading
- * 3. ROUTE REUSABILITY: Same component handles all thread views
+ * 1. useParams() HOOK: Extracts URL parameters from the route
+ * 2. The `messages` state is currently shared among all threads, this will be fixed later.
  */
 export default function ChatThread() {
-  // For now, we'll use placeholder messages
-  // In the next step, we'll learn how to access the threadId from the URL
+  // Extract the threadId from the URL using useParams()
+  const { threadId } = useParams();
+
   const [messages, setMessages] = useState(defaultMessages);
 
   const addMessage = (content) => {
@@ -48,6 +49,9 @@ export default function ChatThread() {
 
   return (
     <main className="chat-container">
+      <div className="chat-thread-header">
+        <h2>Conversation Thread #{threadId}</h2>
+      </div>
       <ChatMessages messages={messages} />
       <ChatInput onAddMessage={addMessage} />
     </main>
