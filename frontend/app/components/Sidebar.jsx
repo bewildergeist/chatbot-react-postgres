@@ -1,5 +1,5 @@
 import React from "react";
-import { href, Link } from "react-router";
+import { href, Link, NavLink } from "react-router";
 
 /**
  * Sidebar Components
@@ -38,13 +38,15 @@ function SidebarHeader() {
 /**
  * ChatThreadItem Component
  *
- * Now uses CALLBACK FUNCTIONS and CLIENT-SIDE NAVIGATION! Key concepts:
+ * Now uses NAVLINK for ACTIVE and PENDING STATE STYLING! Key concepts:
  * 1. DESTRUCTURING: Extract thread data and callback function
  * 2. CALLBACK INVOCATION: Call parent function to trigger state updates
  * 3. EVENT HANDLING: Still handle click events but now trigger real actions
  * 4. STATE LIFTING: Component doesn't manage state, just triggers updates
  * 5. UNIDIRECTIONAL DATA FLOW: Data flows down, events flow up
- * 6. LINK COMPONENT: Uses React Router's Link for smooth navigation
+ * 6. NAVLINK COMPONENT: Automatically provides isActive and isPending states
+ * 7. ACTIVE STYLING: Highlights the currently displayed thread
+ * 8. PENDING STYLING: Shows pulsating animation while data is loading
  */
 function ChatThreadItem({ thread, onDeleteThread }) {
   const { id, title } = thread;
@@ -62,12 +64,20 @@ function ChatThreadItem({ thread, onDeleteThread }) {
   return (
     <li className="chat-thread-item">
       <div className="chat-thread-item-content">
-        <Link
+        <NavLink
           to={href("/chat/:threadId", { threadId: id })}
-          className="chat-thread-link"
+          className={({ isActive, isPending }) =>
+            [
+              "chat-thread-link",
+              isActive && "chat-thread-link-active",
+              isPending && "chat-thread-link-pending",
+            ]
+              .filter(Boolean)
+              .join(" ")
+          }
         >
           {title}
-        </Link>
+        </NavLink>
         <button
           className="delete-thread-btn"
           aria-label={`Delete thread: ${title}`}
