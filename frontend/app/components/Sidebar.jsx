@@ -38,14 +38,15 @@ function SidebarHeader() {
 /**
  * ChatThreadItem Component
  *
- * Now uses NAVLINK for ACTIVE STATE STYLING! Key concepts:
+ * Now uses NAVLINK for ACTIVE and PENDING STATE STYLING! Key concepts:
  * 1. DESTRUCTURING: Extract thread data and callback function
  * 2. CALLBACK INVOCATION: Call parent function to trigger state updates
  * 3. EVENT HANDLING: Still handle click events but now trigger real actions
  * 4. STATE LIFTING: Component doesn't manage state, just triggers updates
  * 5. UNIDIRECTIONAL DATA FLOW: Data flows down, events flow up
- * 6. NAVLINK COMPONENT: Automatically adds 'active' class when route matches
- * 7. ACTIVE STYLING: Uses className callback to apply styles based on isActive
+ * 6. NAVLINK COMPONENT: Automatically provides isActive and isPending states
+ * 7. ACTIVE STYLING: Highlights the currently displayed thread
+ * 8. PENDING STYLING: Shows pulsating animation while data is loading
  */
 function ChatThreadItem({ thread, onDeleteThread }) {
   const { id, title } = thread;
@@ -65,10 +66,14 @@ function ChatThreadItem({ thread, onDeleteThread }) {
       <div className="chat-thread-item-content">
         <NavLink
           to={href("/chat/:threadId", { threadId: id })}
-          className={({ isActive }) =>
-            isActive
-              ? "chat-thread-link chat-thread-link-active"
-              : "chat-thread-link"
+          className={({ isActive, isPending }) =>
+            [
+              "chat-thread-link",
+              isActive && "chat-thread-link-active",
+              isPending && "chat-thread-link-pending",
+            ]
+              .filter(Boolean)
+              .join(" ")
           }
         >
           {title}
