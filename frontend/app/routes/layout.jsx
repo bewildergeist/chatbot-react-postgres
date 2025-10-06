@@ -1,4 +1,4 @@
-import { Outlet, useLoaderData } from "react-router";
+import { Outlet, useLoaderData, redirect } from "react-router";
 import Sidebar from "../components/Sidebar.jsx";
 
 /**
@@ -48,29 +48,76 @@ export async function clientLoader() {
 }
 
 /**
+ * CLIENT ACTION FUNCTION
+ *
+ * Handles thread deletion requests.
+ * Key concepts:
+ * 1. INTENT PATTERN: Uses form field to identify the action type
+ * 2. DELETE REQUEST: Sends DELETE request to Supabase
+ * 3. CASCADE DELETE: Supabase automatically deletes related messages
+ * 4. AUTOMATIC REVALIDATION: Loader re-runs to refresh thread list
+ *
+ * The action runs:
+ * - When a Form with method="post" is submitted
+ * - Checks the "intent" field to determine the action
+ */
+export async function clientAction({ request }) {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+  // Extract form data
+  const formData = await request.formData();
+  const intent = formData.get("intent");
+  const threadId = formData.get("threadId");
+
+  // Handle delete intent
+  if (intent === "delete" && threadId) {
+    try {
+      // DELETE request to Supabase
+      // Messages are automatically deleted due to CASCADE
+      const response = await fetch(
+        `${supabaseUrl}/rest/v1/threads?id=eq.${threadId}`,
+        {
+          method: "DELETE",
+          headers: {
+            apikey: supabaseKey,
+            Authorization: `Bearer ${supabaseKey}`,
+          },
+        },
+      );
+
+      if (!response.ok) {
+        return { error: `Failed to delete thread: ${response.status}` };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return { error: error.message };
+    }
+  }
+
+  return null;
+}
+
+/**
  * Layout Component
  *
- * Now uses DATA LOADING instead of local state!
+ * Now uses DATA LOADING and MUTATIONS!
  *
  * Key concepts:
  * 1. useLoaderData() HOOK: Accesses data from clientLoader
  * 2. NO STATE MANAGEMENT: Data comes from loader, not useState
  * 3. LAYOUT PATTERN: Wraps child routes with consistent UI (sidebar)
  * 4. OUTLET: Renders the matched child route component
+ * 5. NO DELETE CALLBACK: Sidebar handles deletion with useFetcher
  */
 export default function Layout() {
   // Access threads data from the loader
   const { threads } = useLoaderData();
 
-  // Delete functionality will be re-implemented with clientAction later
-  const deleteThread = (threadId) => {
-    console.log("Delete thread:", threadId);
-    console.log("(Mutations will be implemented in the next phase)");
-  };
-
   return (
     <div className="app-layout">
-      <Sidebar threads={threads} onDeleteThread={deleteThread} />
+      <Sidebar threads={threads} />
       <main className="main-content">
         <Outlet />
       </main>
