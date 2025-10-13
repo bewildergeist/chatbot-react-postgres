@@ -118,6 +118,46 @@ app.get("/api/threads/:id", async (req, res) => {
   }
 });
 
+/**
+ * GET /api/threads/:id/messages
+ *
+ * Fetches all messages for a specific thread, ordered chronologically.
+ *
+ * SQL Concepts:
+ * - WHERE with foreign key: Filter messages by their thread_id
+ * - ORDER BY ASC: Sort in ascending order (oldest first)
+ * - Relationships: Connect messages to threads via thread_id
+ *
+ * API Concepts:
+ * - Nested resources: Messages belong to a thread
+ * - RESTful routing: /resource/:id/sub-resource pattern
+ * - Chronological ordering: Natural order for chat messages
+ */
+app.get("/api/threads/:id/messages", async (req, res) => {
+  try {
+    const threadId = req.params.id;
+
+    // Fetch all messages for this thread
+    // Filter by thread_id foreign key and sort chronologically
+    const messages = await sql`
+      SELECT id, thread_id, type, content, created_at 
+      FROM messages 
+      WHERE thread_id = ${threadId}
+      ORDER BY created_at ASC
+    `;
+
+    // Return messages array (empty array if no messages yet)
+    // Unlike single thread endpoint, we don't 404 for empty results
+    // An empty thread is valid - it just has no messages yet
+    res.json(messages);
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    res.status(500).json({
+      error: "Failed to fetch messages from database",
+    });
+  }
+});
+
 // ========== Start the server ========== //
 app.listen(PORT, () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);
