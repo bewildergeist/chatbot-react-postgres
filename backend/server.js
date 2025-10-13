@@ -67,6 +67,57 @@ app.get("/api/threads", async (req, res) => {
   }
 });
 
+/**
+ * GET /api/threads/:id
+ *
+ * Fetches a single thread by its ID.
+ *
+ * SQL Concepts:
+ * - WHERE clause: Filter results to match a specific condition
+ * - Parameterized queries: Safely include user input in SQL queries
+ * - Primary key lookup: Fast retrieval using the id column
+ *
+ * API Concepts:
+ * - Route parameters: Dynamic URL segments (the :id part)
+ * - 404 Not Found: Return when requested resource doesn't exist
+ * - req.params: Access route parameters from the URL
+ *
+ * Security:
+ * - Tagged template (sql``) prevents SQL injection
+ * - Even with user input, the query is safe from malicious SQL
+ */
+app.get("/api/threads/:id", async (req, res) => {
+  try {
+    // Extract the thread ID from the URL
+    // For /api/threads/123, req.params.id will be "123"
+    const threadId = req.params.id;
+
+    // Execute SQL query with WHERE clause
+    // The ${threadId} is safely parameterized by the postgres library
+    const threads = await sql`
+      SELECT id, title, created_at 
+      FROM threads 
+      WHERE id = ${threadId}
+    `;
+
+    // Check if thread was found
+    // SQL returns an empty array if no matches
+    if (threads.length === 0) {
+      return res.status(404).json({
+        error: "Thread not found",
+      });
+    }
+
+    // Return the first (and only) thread
+    res.json(threads[0]);
+  } catch (error) {
+    console.error("Error fetching thread:", error);
+    res.status(500).json({
+      error: "Failed to fetch thread from database",
+    });
+  }
+});
+
 // ========== Start the server ========== //
 app.listen(PORT, () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);
