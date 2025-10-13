@@ -164,6 +164,73 @@ app.get("/api/threads/:id/messages", async (req, res) => {
   }
 });
 
+/**
+ * POST /api/threads/:id/messages
+ *
+ * Creates a new message in a thread.
+ *
+ * SQL Concepts:
+ * - INSERT INTO: Add new rows to a table
+ * - VALUES: Specify the data to insert
+ * - RETURNING: Get back the inserted row (PostgreSQL-specific feature)
+ *
+ * API Concepts:
+ * - POST method: Used for creating new resources
+ * - Request body: Data sent from client (accessed via req.body)
+ * - 201 Created: Success status for resource creation
+ * - 400 Bad Request: Client sent invalid data
+ * - Input validation: Never trust user input
+ *
+ * Security:
+ * - Validate all inputs before using them
+ * - Parameterized queries prevent SQL injection
+ * - Return helpful error messages without exposing internals
+ */
+app.post("/api/threads/:id/messages", async (req, res) => {
+  try {
+    const threadId = req.params.id;
+    const { type, content } = req.body;
+
+    // Validate required fields
+    if (!type || !content) {
+      return res.status(400).json({
+        error: "Both 'type' and 'content' are required",
+      });
+    }
+
+    // Validate type is either 'user' or 'bot'
+    if (type !== "user" && type !== "bot") {
+      return res.status(400).json({
+        error: "Type must be either 'user' or 'bot'",
+      });
+    }
+
+    // Validate content is not empty after trimming
+    const trimmedContent = content.trim();
+    if (trimmedContent.length === 0) {
+      return res.status(400).json({
+        error: "Content cannot be empty",
+      });
+    }
+
+    // Insert the new message
+    // RETURNING * gives us back the inserted row (including generated id and created_at)
+    const messages = await sql`
+      INSERT INTO messages (thread_id, type, content)
+      VALUES (${threadId}, ${type}, ${trimmedContent})
+      RETURNING id, thread_id, type, content, created_at
+    `;
+
+    // Return the created message with 201 Created status
+    res.status(201).json(messages[0]);
+  } catch (error) {
+    console.error("Error creating message:", error);
+    res.status(500).json({
+      error: "Failed to create message",
+    });
+  }
+});
+
 // ========== Start the server ========== //
 app.listen(PORT, () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);
