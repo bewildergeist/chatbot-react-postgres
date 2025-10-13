@@ -231,6 +231,42 @@ app.post("/api/threads/:id/messages", async (req, res) => {
   }
 });
 
+// ========== DELETE an existing thread ========== //
+// DELETE /api/threads/:id - Delete a thread by ID
+app.delete("/api/threads/:id", async (req, res) => {
+  try {
+    // Extract the thread ID from the URL parameters
+    const threadId = req.params.id;
+
+    // Delete the thread from the database
+    // Note: This will automatically delete all associated messages
+    // because of the ON DELETE CASCADE constraint on the messages table
+    const result = await sql`
+      DELETE FROM threads
+      WHERE id = ${threadId}
+      RETURNING id
+    `;
+
+    // If no thread was deleted, it means the thread doesn't exist
+    if (result.length === 0) {
+      return res.status(404).json({
+        error: "Thread not found",
+      });
+    }
+
+    // Return success message
+    res.json({
+      message: "Thread deleted successfully",
+      deletedId: result[0].id,
+    });
+  } catch (error) {
+    console.error("Error deleting thread:", error);
+    res.status(500).json({
+      error: "Failed to delete thread",
+    });
+  }
+});
+
 // ========== Start the server ========== //
 app.listen(PORT, () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);
