@@ -104,49 +104,55 @@ export async function clientLoader({ params }) {
 /**
  * CLIENT ACTION FUNCTION
  *
- * Handles form submissions to create new messages.
+ * Handles form submissions to create new messages using our custom API.
  * Key concepts:
  * 1. FORM DATA: Extract data from form submission
- * 2. POST REQUEST: Send data to Supabase to create new message
+ * 2. POST REQUEST: Send data to our API to create new message
  * 3. AUTOMATIC REVALIDATION: React Router re-runs loader after action completes
- * 4. OPTIMISTIC UI: Form clears immediately, data refreshes automatically
+ * 4. SERVER-SIDE VALIDATION: Our API validates the data
  *
  * The action runs:
  * - When a Form with method="post" is submitted
  * - Before the loader re-runs (automatic revalidation)
  */
 export async function clientAction({ params, request }) {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   // Extract form data from the request
   const formData = await request.formData();
   const content = formData.get("message");
 
-  // Validate message content
+  // Basic client-side validation (server will validate too)
   if (!content || !content.trim()) {
     return { error: "Message cannot be empty" };
   }
 
   // Create the message object
   const newMessage = {
-    thread_id: params.threadId,
     type: "user",
     content: content.trim(),
   };
 
-  // POST to Supabase to create the message
+  // POST to our custom API to create the message
   try {
-    const response = await fetch(`${supabaseUrl}/rest/v1/messages`, {
-      method: "POST",
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newMessage),
-    });
+    const response = await fetch(
+      `${apiUrl}/api/threads/${params.threadId}/messages`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newMessage),
+      }
+    );
 
+    // Check for validation errors (400)
+    if (response.status === 400) {
+      const error = await response.json();
+      return { error: error.error || "Invalid message data" };
+    }
+
+    // Check for other errors
     if (!response.ok) {
       return { error: `Failed to create message: ${response.status}` };
     }
