@@ -16,6 +16,12 @@ const PORT = process.env.PORT || 3000;
 // Without CORS, browsers block requests between different origins for security
 app.use(cors());
 
+// Parse JSON request bodies
+// This middleware reads the body of POST/PUT/PATCH requests and parses JSON
+// Makes the parsed data available as req.body in route handlers
+// Without this, req.body would be undefined
+app.use(express.json());
+
 // ========== Define API Endpoints ========== //
 
 // Root endpoint - verify server is running
