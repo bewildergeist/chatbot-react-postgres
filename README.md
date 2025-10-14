@@ -78,6 +78,12 @@ Complete your CRUD migration from Supabase by implementing thread creation. Buil
 
 **Skills**: Compound operations, sequential database operations, API design, business logic, complete CRUD implementation
 
+### Step 13: Updating Thread Titles - [PR #13 tutorial](https://github.com/bewildergeist/chatbot-react-postgres/pull/13)
+
+Complete the full CRUD implementation by adding Update functionality. Implement a PATCH endpoint for partial resource updates, then build a clean editing interface using React Router's nested routes. Learn how `Outlet` and `useRouteLoaderData` enable parent-child route relationships, and discover how URL-based state can replace complex state management patterns. This simpler approach demonstrates that routing itself can elegantly handle UI modes like viewing versus editing.
+
+**Skills**: HTTP PATCH method, SQL UPDATE statements, nested routes, Outlet component, useRouteLoaderData hook, URL-based state, uncontrolled forms, API documentation
+
 ## Prerequisites
 
 - Basic web development knowledge
