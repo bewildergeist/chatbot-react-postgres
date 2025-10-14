@@ -4,6 +4,7 @@ import {
   Link,
   useRouteError,
   href,
+  Outlet,
 } from "react-router";
 import { ChatMessages, ChatInput } from "../components/Chat.jsx";
 
@@ -143,7 +144,7 @@ export async function clientAction({ params, request }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(newMessage),
-      }
+      },
     );
 
     // Check for validation errors (400)
@@ -168,13 +169,21 @@ export async function clientAction({ params, request }) {
  * Chat Thread Route Component
  *
  * Displays a conversation thread with messages from the database.
- * Now includes error handling from form submissions.
+ * Now includes nested routing for editing thread title.
  *
  * Key concepts:
  * 1. useLoaderData() HOOK: Accesses data returned from clientLoader
  * 2. useActionData() HOOK: Accesses result returned from clientAction
- * 3. ERROR DISPLAY: Shows validation or API errors to the user
- * 4. USER FEEDBACK: Informs users when something goes wrong
+ * 3. NESTED ROUTES: Outlet component renders child routes
+ * 4. LINK NAVIGATION: Link to="edit" navigates to nested edit route
+ * 5. ERROR DISPLAY: Shows validation or API errors to the user
+ *
+ * Routing Structure:
+ * - /chat/:threadId → This component (view thread)
+ * - /chat/:threadId/edit → Edit form overlay (child route)
+ *
+ * The Outlet component renders the child route above the thread view,
+ * creating an overlay effect for the edit form.
  */
 export default function ChatThread() {
   // Access the thread and messages data from the loader
@@ -185,8 +194,12 @@ export default function ChatThread() {
 
   return (
     <main className="chat-container">
+      <Outlet />
       <div className="chat-thread-header">
         <h2>{thread.title}</h2>
+        <Link to="edit" className="thread-title-edit-link">
+          Edit
+        </Link>
       </div>
       <ChatMessages messages={messages} />
       <ChatInput />
