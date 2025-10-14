@@ -253,6 +253,62 @@ or
 }
 ```
 
+### PATCH /api/threads/:id
+
+Updates a thread's title. This is a partial update - only the title field is modified.
+
+**URL Parameters:**
+
+- `id` - The UUID of the thread to update
+
+**Request Body:**
+
+```json
+{
+  "title": "Updated thread title"
+}
+```
+
+**Request Body Fields:**
+
+- `title` (required) - The new thread title (cannot be empty)
+
+**Response (200 OK):**
+
+```json
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "title": "Updated thread title",
+  "created_at": "2025-10-13T10:30:00Z"
+}
+```
+
+**Response (400 Bad Request):**
+
+```json
+{
+  "error": "Title is required"
+}
+```
+
+or
+
+```json
+{
+  "error": "Title cannot be empty"
+}
+```
+
+**Response (404 Not Found):**
+
+```json
+{
+  "error": "Thread not found"
+}
+```
+
+**Note:** This endpoint uses PATCH (not PUT) because it only updates specific fields rather than replacing the entire resource. Other fields like `created_at` remain unchanged.
+
 ### DELETE /api/threads/:id
 
 Deletes a thread and all its associated messages. The database CASCADE constraint automatically removes all messages when a thread is deleted.
