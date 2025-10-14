@@ -231,6 +231,89 @@ app.post("/api/threads/:id/messages", async (req, res) => {
   }
 });
 
+/**
+ * POST /api/threads
+ *
+ * Creates a new thread with an initial message.
+ * This is a compound operation that performs two inserts in sequence.
+ *
+ * SQL Concepts:
+ * - SEQUENTIAL INSERTS: Thread must be created first to get its ID
+ * - RETURNING clause: Get the created thread's ID for the message insert
+ * - FOREIGN KEY: Message references the newly created thread
+ * - TRANSACTION SEMANTICS: Both inserts should succeed or neither should
+ *
+ * API Concepts:
+ * - COMPOUND OPERATION: Creates multiple related resources in one request
+ * - 201 Created: Appropriate status for resource creation
+ * - Business Logic: A new chat always starts with a message
+ * - Request Body: Requires both title and initial message content
+ *
+ * Design Decision:
+ * This endpoint combines thread and message creation into a single request
+ * because it matches the business logic (a chat thread always starts with
+ * a message). An alternative would be separate endpoints, but that would
+ * require two HTTP requests and expose an inconsistent state.
+ */
+app.post("/api/threads", async (req, res) => {
+  try {
+    const { title, content } = req.body;
+
+    // Validate required fields
+    if (!title || !content) {
+      return res.status(400).json({
+        error: "Both 'title' and 'content' are required",
+      });
+    }
+
+    // Validate title is not empty after trimming
+    const trimmedTitle = title.trim();
+    if (trimmedTitle.length === 0) {
+      return res.status(400).json({
+        error: "Title cannot be empty",
+      });
+    }
+
+    // Validate content is not empty after trimming
+    const trimmedContent = content.trim();
+    if (trimmedContent.length === 0) {
+      return res.status(400).json({
+        error: "Content cannot be empty",
+      });
+    }
+
+    // Step 1: Create the thread
+    // Use RETURNING to get the generated ID for the next insert
+    const threads = await sql`
+      INSERT INTO threads (title)
+      VALUES (${trimmedTitle})
+      RETURNING id, title, created_at
+    `;
+
+    const thread = threads[0];
+
+    // Step 2: Create the first message in the new thread
+    // Use the thread ID from the previous insert
+    const messages = await sql`
+      INSERT INTO messages (thread_id, type, content)
+      VALUES (${thread.id}, 'user', ${trimmedContent})
+      RETURNING id, thread_id, type, content, created_at
+    `;
+
+    // Return both the thread and the initial message with 201 Created status
+    // This gives the frontend everything it needs to navigate to the new thread
+    res.status(201).json({
+      thread: thread,
+      message: messages[0],
+    });
+  } catch (error) {
+    console.error("Error creating thread:", error);
+    res.status(500).json({
+      error: "Failed to create thread",
+    });
+  }
+});
+
 // ========== DELETE an existing thread ========== //
 // DELETE /api/threads/:id - Delete a thread by ID
 app.delete("/api/threads/:id", async (req, res) => {
