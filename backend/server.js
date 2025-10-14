@@ -314,6 +314,78 @@ app.post("/api/threads", async (req, res) => {
   }
 });
 
+/**
+ * PATCH /api/threads/:id
+ *
+ * Updates a thread's title.
+ * This is a partial update - only the title field is modified.
+ *
+ * SQL Concepts:
+ * - UPDATE statement: Modifies existing rows in a table
+ * - WHERE clause: Specifies which row(s) to update
+ * - RETURNING clause: Returns the updated row to confirm the change
+ * - Partial updates: Only specified columns are modified, others remain unchanged
+ *
+ * API Concepts:
+ * - PATCH vs PUT: PATCH updates specific fields, PUT replaces entire resource
+ * - 200 OK: Success status for updates (resource still exists at same URI)
+ * - 404 Not Found: Thread doesn't exist
+ * - 400 Bad Request: Invalid input data
+ * - Idempotency: Calling PATCH multiple times with same data has same effect
+ *
+ * HTTP Method Choice:
+ * We use PATCH because we're only updating the title field. If we were
+ * replacing the entire thread resource, we would use PUT instead.
+ */
+app.patch("/api/threads/:id", async (req, res) => {
+  try {
+    // Extract the thread ID from the URL parameters
+    const threadId = req.params.id;
+
+    // Extract the new title from the request body
+    const { title } = req.body;
+
+    // Validate that title is provided
+    if (!title) {
+      return res.status(400).json({
+        error: "Title is required",
+      });
+    }
+
+    // Validate title is not empty after trimming
+    const trimmedTitle = title.trim();
+    if (trimmedTitle.length === 0) {
+      return res.status(400).json({
+        error: "Title cannot be empty",
+      });
+    }
+
+    // Update the thread in the database
+    // Only the title field is modified, other fields (created_at) remain unchanged
+    const result = await sql`
+      UPDATE threads
+      SET title = ${trimmedTitle}
+      WHERE id = ${threadId}
+      RETURNING id, title, created_at
+    `;
+
+    // If no thread was updated, it means the thread doesn't exist
+    if (result.length === 0) {
+      return res.status(404).json({
+        error: "Thread not found",
+      });
+    }
+
+    // Return the updated thread with 200 OK status
+    res.json(result[0]);
+  } catch (error) {
+    console.error("Error updating thread:", error);
+    res.status(500).json({
+      error: "Failed to update thread",
+    });
+  }
+});
+
 // ========== DELETE an existing thread ========== //
 // DELETE /api/threads/:id - Delete a thread by ID
 app.delete("/api/threads/:id", async (req, res) => {
