@@ -1,5 +1,7 @@
 # A "chatbot" built with React and PostgreSQL
 
+<img width="2880" height="1578" alt="chatbot-ui-screenshot" src="https://github.com/user-attachments/assets/40f4435a-0fe2-4813-9f20-9597a2cdfc93" />
+
 This repository serves as a reference implementation and tutorial for a classroom project where students build a chatbot UI with full CRUD functionality, progressing from basic React components to a complete full-stack application, first by integrating a Supabase REST API, then refactoring to a custom Express API that integrates with a PostgreSQL database.
 
 Each step of the project is documented in a separate pull request, which includes a detailed tutorial explaining the concepts and code changes involved. This allows students to follow along, understand the evolution of the application, and learn best practices in React development, state management, routing, data fetching, and backend integration.
@@ -83,6 +85,8 @@ Complete your CRUD migration from Supabase by implementing thread creation. Buil
 Complete the full CRUD implementation by adding Update functionality. Implement a PATCH endpoint for partial resource updates, then build a clean editing interface using React Router's nested routes. Learn how `Outlet` and `useRouteLoaderData` enable parent-child route relationships, and discover how URL-based state can replace complex state management patterns. This simpler approach demonstrates that routing itself can elegantly handle UI modes like viewing versus editing.
 
 **Skills**: HTTP PATCH method, SQL UPDATE statements, nested routes, Outlet component, useRouteLoaderData hook, URL-based state, uncontrolled forms, API documentation
+
+https://github.com/user-attachments/assets/fe215e1f-d61b-4555-98f2-c5f41dd2db1b
 
 ## Prerequisites
 
