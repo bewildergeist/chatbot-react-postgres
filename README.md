@@ -86,6 +86,12 @@ Complete the full CRUD implementation by adding Update functionality. Implement 
 
 **Skills**: HTTP PATCH method, SQL UPDATE statements, nested routes, Outlet component, useRouteLoaderData hook, URL-based state, uncontrolled forms, API documentation
 
+### Step 14: User Accounts & Login UI - [PR #14 tutorial](https://github.com/bewildergeist/chatbot-react-postgres/pull/14)
+
+Add user authentication to your chatbot. Create registration and login forms where users can create accounts with email and password. Learn how password hashing works with bcrypt, what JWT tokens are and how they're structured, and how Supabase Auth manages user sessions. This PR focuses on building the authentication UI — users can register and log in, but the backend won't enforce authentication yet. This lets you explore how tokens are created and stored before learning to use them in the next steps.
+
+**Skills**: Supabase Auth API, user registration, login forms, password hashing with bcrypt, JWT tokens, localStorage, form validation, clientAction functions, authentication concepts
+
 https://github.com/user-attachments/assets/fe215e1f-d61b-4555-98f2-c5f41dd2db1b
 
 ## Prerequisites
