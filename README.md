@@ -92,7 +92,19 @@ Add user authentication to your chatbot. Create registration and login forms whe
 
 **Skills**: Supabase Auth API, user registration, login forms, password hashing with bcrypt, JWT tokens, localStorage, form validation, clientAction functions, authentication concepts
 
+### Step 15: Sending Authentication Tokens - [PR #15 tutorial](https://github.com/bewildergeist/chatbot-react-postgres/pull/15)
+
+Implement the client-side authentication layer by automatically including JWT tokens in all API requests. Create a custom `apiFetch` wrapper function that adds the `Authorization: Bearer <token>` header to every request, then refactor all loaders and actions to use it. Display the current user's email in the sidebar. Add logout functionality that clears the session. Learn the DRY principle, wrapper functions, and how to inspect authentication tokens in the browser's Network tab. The backend doesn't enforce authentication yet—this PR prepares the groundwork for server-side verification in the next step.
+
+**Skills**: Wrapper functions, Bearer token authentication, Authorization headers, DRY principle, session management, logout functionality, useEffect hook, Supabase session API
+
+---
+
+## Screencast of the chatbot in action
+
 https://github.com/user-attachments/assets/fe215e1f-d61b-4555-98f2-c5f41dd2db1b
+
+---
 
 ## Prerequisites
 
