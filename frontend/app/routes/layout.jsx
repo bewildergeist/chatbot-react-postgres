@@ -1,6 +1,7 @@
 import { Outlet, useLoaderData, redirect } from "react-router";
 import Sidebar from "../components/Sidebar.jsx";
 import { apiFetch } from "../lib/apiFetch.js";
+import { supabase } from "../lib/supabase.js";
 
 /**
  * CLIENT LOADER FUNCTION
@@ -38,25 +39,27 @@ export async function clientLoader() {
 /**
  * CLIENT ACTION FUNCTION
  *
- * Handles thread deletion requests.
+ * Handles thread deletion and user logout.
  * Key concepts:
  * 1. INTENT PATTERN: Uses form field to identify the action type
- * 2. DELETE REQUEST: Sends DELETE request to our custom API
- * 3. CASCADE DELETE: Database automatically deletes related messages
- * 4. AUTOMATIC REVALIDATION: Loader re-runs to refresh thread list
+ * 2. MULTIPLE ACTIONS: Single route handles different operations
+ * 3. DELETE REQUEST: Sends DELETE request to our custom API
+ * 4. LOGOUT: Clears session and redirects to login
+ * 5. AUTOMATIC REVALIDATION: Loader re-runs after mutations
  *
  * The action runs:
- * - When a Form with method="post" is submitted
- * - Checks the "intent" field to determine the action
+ * - When a Form with method="post" is submitted to this route
+ * - Checks the "intent" field to determine which action to perform
  */
 export async function clientAction({ request }) {
   // Extract form data
   const formData = await request.formData();
   const intent = formData.get("intent");
-  const threadId = formData.get("threadId");
 
-  // Handle delete intent
-  if (intent === "delete" && threadId) {
+  // Handle delete thread intent
+  if (intent === "delete") {
+    const threadId = formData.get("threadId");
+
     try {
       // DELETE request to our custom API with authentication
       // apiFetch automatically includes the JWT token
@@ -73,6 +76,20 @@ export async function clientAction({ request }) {
     } catch (error) {
       return { error: error.message };
     }
+  }
+
+  // Handle logout intent
+  if (intent === "logout") {
+    // Sign out the user using Supabase Auth
+    // This clears the session and JWT tokens from localStorage
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error("Error signing out:", error.message);
+    }
+
+    // Redirect to login page after logout
+    return redirect("/login");
   }
 
   return null;
