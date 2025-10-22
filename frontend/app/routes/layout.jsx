@@ -1,5 +1,6 @@
 import { Outlet, useLoaderData, redirect } from "react-router";
 import Sidebar from "../components/Sidebar.jsx";
+import { apiFetch } from "../lib/apiFetch.js";
 
 /**
  * CLIENT LOADER FUNCTION
@@ -10,6 +11,7 @@ import Sidebar from "../components/Sidebar.jsx";
  * 2. SHARED DATA: Data is available to this component and can be accessed by children
  * 3. CUSTOM API: Direct HTTP calls to our Express API server
  * 4. ENVIRONMENT VARIABLES: Secure way to store API endpoint URLs
+ * 5. AUTHENTICATED REQUESTS: Uses apiFetch to include JWT token
  *
  * This loader runs:
  * - On initial page load
@@ -17,16 +19,10 @@ import Sidebar from "../components/Sidebar.jsx";
  * - When React Router revalidates (after mutations)
  */
 export async function clientLoader() {
-  // Get our API URL from environment variables
-  const apiUrl = import.meta.env.VITE_API_URL;
-
-  // Construct the API endpoint URL
-  // Our custom API handles sorting internally (ORDER BY created_at DESC)
-  const url = `${apiUrl}/api/threads`;
-
-  // Make the request to our custom API
-  // No special headers needed - our API is public for now
-  const response = await fetch(url);
+  // Make the request to our custom API with authentication
+  // apiFetch automatically includes the JWT token in the Authorization header
+  // and constructs the full URL from the API base URL + path
+  const response = await apiFetch("/api/threads");
 
   // Check if the request was successful
   if (!response.ok) {
@@ -54,9 +50,6 @@ export async function clientLoader() {
  * - Checks the "intent" field to determine the action
  */
 export async function clientAction({ request }) {
-  // Get our API URL from environment variables
-  const apiUrl = import.meta.env.VITE_API_URL;
-
   // Extract form data
   const formData = await request.formData();
   const intent = formData.get("intent");
@@ -65,9 +58,10 @@ export async function clientAction({ request }) {
   // Handle delete intent
   if (intent === "delete" && threadId) {
     try {
-      // DELETE request to our custom API
+      // DELETE request to our custom API with authentication
+      // apiFetch automatically includes the JWT token
       // Messages are automatically deleted due to CASCADE
-      const response = await fetch(`${apiUrl}/api/threads/${threadId}`, {
+      const response = await apiFetch(`/api/threads/${threadId}`, {
         method: "DELETE",
       });
 
