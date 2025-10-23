@@ -2,6 +2,7 @@
 import express from "express";
 import cors from "cors";
 import sql from "./db.js";
+import { requireAuth } from "./auth.js";
 
 // ========== Setup Express App ========== //
 const app = express();
@@ -37,6 +38,11 @@ app.get("/", (req, res) => {
  *
  * Fetches all chat threads from the database, ordered by creation date (newest first).
  *
+ * Authentication:
+ * - Protected by requireAuth middleware
+ * - Requires valid JWT token in Authorization header
+ * - req.userId is available (will be used in PR #17 for filtering)
+ *
  * SQL Concepts:
  * - SELECT: Retrieve data from the database
  * - Specific columns: Only fetch the columns we need (id, title, created_at)
@@ -49,7 +55,7 @@ app.get("/", (req, res) => {
  * - Status codes: 200 for success, 500 for server errors
  * - JSON response: Return data in a format the frontend can use
  */
-app.get("/api/threads", async (req, res) => {
+app.get("/api/threads", requireAuth, async (req, res) => {
   try {
     // Execute SQL query using the sql`` tagged template
     const threads = await sql`
@@ -78,6 +84,11 @@ app.get("/api/threads", async (req, res) => {
  *
  * Fetches a single thread by its ID.
  *
+ * Authentication:
+ * - Protected by requireAuth middleware
+ * - Requires valid JWT token in Authorization header
+ * - req.userId is available (will be used in PR #17 for authorization)
+ *
  * SQL Concepts:
  * - WHERE clause: Filter results to match a specific condition
  * - Parameterized queries: Safely include user input in SQL queries
@@ -92,7 +103,7 @@ app.get("/api/threads", async (req, res) => {
  * - Tagged template (sql``) prevents SQL injection
  * - Even with user input, the query is safe from malicious SQL
  */
-app.get("/api/threads/:id", async (req, res) => {
+app.get("/api/threads/:id", requireAuth, async (req, res) => {
   try {
     // Extract the thread ID from the URL
     // For /api/threads/123, req.params.id will be "123"
@@ -129,6 +140,11 @@ app.get("/api/threads/:id", async (req, res) => {
  *
  * Fetches all messages for a specific thread, ordered chronologically.
  *
+ * Authentication:
+ * - Protected by requireAuth middleware
+ * - Requires valid JWT token in Authorization header
+ * - req.userId is available (will be used in PR #17 for authorization)
+ *
  * SQL Concepts:
  * - WHERE with foreign key: Filter messages by their thread_id
  * - ORDER BY ASC: Sort in ascending order (oldest first)
@@ -139,7 +155,7 @@ app.get("/api/threads/:id", async (req, res) => {
  * - RESTful routing: /resource/:id/sub-resource pattern
  * - Chronological ordering: Natural order for chat messages
  */
-app.get("/api/threads/:id/messages", async (req, res) => {
+app.get("/api/threads/:id/messages", requireAuth, async (req, res) => {
   try {
     const threadId = req.params.id;
 
@@ -169,6 +185,11 @@ app.get("/api/threads/:id/messages", async (req, res) => {
  *
  * Creates a new message in a thread.
  *
+ * Authentication:
+ * - Protected by requireAuth middleware
+ * - Requires valid JWT token in Authorization header
+ * - req.userId is available (will be used in PR #17 for authorization)
+ *
  * SQL Concepts:
  * - INSERT INTO: Add new rows to a table
  * - VALUES: Specify the data to insert
@@ -186,7 +207,7 @@ app.get("/api/threads/:id/messages", async (req, res) => {
  * - Parameterized queries prevent SQL injection
  * - Return helpful error messages without exposing internals
  */
-app.post("/api/threads/:id/messages", async (req, res) => {
+app.post("/api/threads/:id/messages", requireAuth, async (req, res) => {
   try {
     const threadId = req.params.id;
     const { type, content } = req.body;
@@ -237,6 +258,11 @@ app.post("/api/threads/:id/messages", async (req, res) => {
  * Creates a new thread with an initial message.
  * This is a compound operation that performs two inserts in sequence.
  *
+ * Authentication:
+ * - Protected by requireAuth middleware
+ * - Requires valid JWT token in Authorization header
+ * - req.userId is available (will be used in PR #17 to set thread owner)
+ *
  * SQL Concepts:
  * - SEQUENTIAL INSERTS: Thread must be created first to get its ID
  * - RETURNING clause: Get the created thread's ID for the message insert
@@ -255,7 +281,7 @@ app.post("/api/threads/:id/messages", async (req, res) => {
  * a message). An alternative would be separate endpoints, but that would
  * require two HTTP requests and expose an inconsistent state.
  */
-app.post("/api/threads", async (req, res) => {
+app.post("/api/threads", requireAuth, async (req, res) => {
   try {
     const { title, content } = req.body;
 
@@ -320,6 +346,11 @@ app.post("/api/threads", async (req, res) => {
  * Updates a thread's title.
  * This is a partial update - only the title field is modified.
  *
+ * Authentication:
+ * - Protected by requireAuth middleware
+ * - Requires valid JWT token in Authorization header
+ * - req.userId is available (will be used in PR #17 for authorization)
+ *
  * SQL Concepts:
  * - UPDATE statement: Modifies existing rows in a table
  * - WHERE clause: Specifies which row(s) to update
@@ -337,7 +368,7 @@ app.post("/api/threads", async (req, res) => {
  * We use PATCH because we're only updating the title field. If we were
  * replacing the entire thread resource, we would use PUT instead.
  */
-app.patch("/api/threads/:id", async (req, res) => {
+app.patch("/api/threads/:id", requireAuth, async (req, res) => {
   try {
     // Extract the thread ID from the URL parameters
     const threadId = req.params.id;
@@ -386,9 +417,17 @@ app.patch("/api/threads/:id", async (req, res) => {
   }
 });
 
-// ========== DELETE an existing thread ========== //
-// DELETE /api/threads/:id - Delete a thread by ID
-app.delete("/api/threads/:id", async (req, res) => {
+/**
+ * DELETE /api/threads/:id
+ *
+ * Delete a thread by ID.
+ *
+ * Authentication:
+ * - Protected by requireAuth middleware
+ * - Requires valid JWT token in Authorization header
+ * - req.userId is available (will be used in PR #17 for authorization)
+ */
+app.delete("/api/threads/:id", requireAuth, async (req, res) => {
   try {
     // Extract the thread ID from the URL parameters
     const threadId = req.params.id;
