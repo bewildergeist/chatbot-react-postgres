@@ -100,21 +100,27 @@ app.get("/api/threads", requireAuth, async (req, res) => {
  * Authentication:
  * - Protected by requireAuth middleware
  * - Requires valid JWT token in Authorization header
- * - req.userId is available (will be used in PR #17 for authorization)
+ * - req.userId contains the authenticated user's ID
+ *
+ * Authorization:
+ * - WHERE user_id = ${req.userId} ensures users can only access their own threads
+ * - Returns 404 if thread doesn't exist OR user doesn't own it
+ * - This prevents users from discovering other users' thread IDs
  *
  * SQL Concepts:
- * - WHERE clause: Filter results to match a specific condition
+ * - WHERE clause: Filter results to match BOTH id AND user_id
  * - Parameterized queries: Safely include user input in SQL queries
- * - Primary key lookup: Fast retrieval using the id column
+ * - Composite conditions: Multiple conditions in WHERE (AND logic)
  *
  * API Concepts:
  * - Route parameters: Dynamic URL segments (the :id part)
- * - 404 Not Found: Return when requested resource doesn't exist
+ * - 404 Not Found: Return when requested resource doesn't exist OR is unauthorized
  * - req.params: Access route parameters from the URL
  *
- * Security:
+ * Security Design:
+ * - 404 for unauthorized access (not 403) prevents information leakage
+ * - Users can't tell if a thread exists but is unauthorized vs doesn't exist
  * - Tagged template (sql``) prevents SQL injection
- * - Even with user input, the query is safe from malicious SQL
  */
 app.get("/api/threads/:id", requireAuth, async (req, res) => {
   try {
@@ -122,16 +128,18 @@ app.get("/api/threads/:id", requireAuth, async (req, res) => {
     // For /api/threads/123, req.params.id will be "123"
     const threadId = req.params.id;
 
-    // Execute SQL query with WHERE clause
-    // The ${threadId} is safely parameterized by the postgres library
+    // Execute SQL query with WHERE clause for BOTH id AND user_id
+    // This ensures users can only access threads they own
+    // The ${threadId} and ${req.userId} are safely parameterized by the postgres library
     const threads = await sql`
-      SELECT id, title, created_at 
+      SELECT id, title, user_id, created_at 
       FROM threads 
-      WHERE id = ${threadId}
+      WHERE id = ${threadId} AND user_id = ${req.userId}
     `;
 
     // Check if thread was found
-    // SQL returns an empty array if no matches
+    // SQL returns an empty array if no matches (either doesn't exist or not owned by user)
+    // We return 404 in both cases to avoid leaking information about other users' threads
     if (threads.length === 0) {
       return res.status(404).json({
         error: "Thread not found",
@@ -156,24 +164,50 @@ app.get("/api/threads/:id", requireAuth, async (req, res) => {
  * Authentication:
  * - Protected by requireAuth middleware
  * - Requires valid JWT token in Authorization header
- * - req.userId is available (will be used in PR #17 for authorization)
+ * - req.userId contains the authenticated user's ID
+ *
+ * Authorization:
+ * - First checks if thread exists AND is owned by the user
+ * - Only returns messages if user owns the parent thread
+ * - Returns empty array (not 404) if thread is unauthorized/doesn't exist
  *
  * SQL Concepts:
  * - WHERE with foreign key: Filter messages by their thread_id
  * - ORDER BY ASC: Sort in ascending order (oldest first)
  * - Relationships: Connect messages to threads via thread_id
+ * - Authorization check: Verify thread ownership before fetching messages
  *
  * API Concepts:
  * - Nested resources: Messages belong to a thread
  * - RESTful routing: /resource/:id/sub-resource pattern
  * - Chronological ordering: Natural order for chat messages
+ *
+ * Security Design:
+ * - Two-step authorization: check thread ownership, then fetch messages
+ * - Returns empty array (not 404) to avoid leaking thread existence
+ * - Users cannot access messages from threads they don't own
  */
 app.get("/api/threads/:id/messages", requireAuth, async (req, res) => {
   try {
     const threadId = req.params.id;
 
-    // Fetch all messages for this thread
-    // Filter by thread_id foreign key and sort chronologically
+    // Step 1: Verify the thread exists AND is owned by the authenticated user
+    // This prevents users from accessing messages in threads they don't own
+    const threads = await sql`
+      SELECT id 
+      FROM threads 
+      WHERE id = ${threadId} AND user_id = ${req.userId}
+    `;
+
+    // If thread doesn't exist or user doesn't own it, return empty array
+    // We return empty array (not 404) because from the frontend's perspective,
+    // a thread with no messages looks the same as an unauthorized thread
+    if (threads.length === 0) {
+      return res.json([]);
+    }
+
+    // Step 2: Fetch all messages for this thread
+    // We know the user owns the thread, so it's safe to return the messages
     const messages = await sql`
       SELECT id, thread_id, type, content, created_at 
       FROM messages 
