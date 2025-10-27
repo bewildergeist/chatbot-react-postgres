@@ -41,11 +41,17 @@ app.get("/", (req, res) => {
  * Authentication:
  * - Protected by requireAuth middleware
  * - Requires valid JWT token in Authorization header
- * - req.userId is available (will be used in PR #17 for filtering)
+ * - req.userId contains the authenticated user's ID
+ *
+ * Authorization:
+ * - WHERE user_id = ${req.userId} ensures users only see their own threads
+ * - This is data isolation - each user has their own separate list
+ * - Users cannot see threads created by other users
  *
  * SQL Concepts:
  * - SELECT: Retrieve data from the database
- * - Specific columns: Only fetch the columns we need (id, title, created_at)
+ * - Specific columns: Only fetch the columns we need
+ * - WHERE clause: Filter to only this user's threads
  * - ORDER BY: Sort the results
  * - DESC: Descending order (newest first)
  *
@@ -54,13 +60,20 @@ app.get("/", (req, res) => {
  * - try/catch: Handle errors gracefully
  * - Status codes: 200 for success, 500 for server errors
  * - JSON response: Return data in a format the frontend can use
+ *
+ * Security Note:
+ * - Authorization happens at the database query level
+ * - Even if frontend is compromised, backend enforces data isolation
  */
 app.get("/api/threads", requireAuth, async (req, res) => {
   try {
     // Execute SQL query using the sql`` tagged template
+    // WHERE clause filters to only threads owned by the authenticated user
+    // This is the core of authorization - filtering data by ownership
     const threads = await sql`
-      SELECT id, title, created_at 
+      SELECT id, title, user_id, created_at 
       FROM threads 
+      WHERE user_id = ${req.userId}
       ORDER BY created_at DESC
     `;
 
