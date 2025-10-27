@@ -261,13 +261,18 @@ app.post("/api/threads/:id/messages", requireAuth, async (req, res) => {
  * Authentication:
  * - Protected by requireAuth middleware
  * - Requires valid JWT token in Authorization header
- * - req.userId is available (will be used in PR #17 to set thread owner)
+ * - req.userId contains the authenticated user's ID
+ *
+ * Authorization:
+ * - Sets the user_id column to req.userId, establishing ownership
+ * - Only the creator can access/modify this thread (enforced by other endpoints)
  *
  * SQL Concepts:
  * - SEQUENTIAL INSERTS: Thread must be created first to get its ID
  * - RETURNING clause: Get the created thread's ID for the message insert
  * - FOREIGN KEY: Message references the newly created thread
  * - TRANSACTION SEMANTICS: Both inserts should succeed or neither should
+ * - DATA OWNERSHIP: user_id column links thread to its owner
  *
  * API Concepts:
  * - COMPOUND OPERATION: Creates multiple related resources in one request
@@ -310,10 +315,11 @@ app.post("/api/threads", requireAuth, async (req, res) => {
 
     // Step 1: Create the thread
     // Use RETURNING to get the generated ID for the next insert
+    // Set user_id to establish ownership - this user now owns this thread
     const threads = await sql`
-      INSERT INTO threads (title)
-      VALUES (${trimmedTitle})
-      RETURNING id, title, created_at
+      INSERT INTO threads (title, user_id)
+      VALUES (${trimmedTitle}, ${req.userId})
+      RETURNING id, title, user_id, created_at
     `;
 
     const thread = threads[0];
