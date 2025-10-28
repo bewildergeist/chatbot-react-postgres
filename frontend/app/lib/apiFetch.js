@@ -80,9 +80,10 @@ export async function apiFetch(path, options = {}) {
 
   // Special handling for 401 Unauthorized
   // This means the session has expired or the token is invalid
-  // Redirect to login page instead of returning the error response
+  // Redirect to login page, preserving the current URL so we can return here after login
   if (response.status === 401) {
-    throw redirect("/login");
+    const currentPath = window.location.pathname + window.location.search;
+    throw redirect(`/login?redirect=${encodeURIComponent(currentPath)}`);
   }
 
   // Return the response for the calling code to handle
