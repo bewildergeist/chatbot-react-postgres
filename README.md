@@ -110,6 +110,12 @@ Implement authorization to ensure users can only access and modify their own dat
 
 **Skills**: Authorization vs authentication, data ownership models, foreign key relationships, query-level security, database migrations, SQL WHERE clauses, security best practices, data isolation, 404 vs 403 responses
 
+### Step 18: Automatic Authentication Error Handling - [PR #18 tutorial](https://github.com/bewildergeist/chatbot-react-postgres/pull/18)
+
+Improve user experience by automatically handling session expiration. When JWT tokens expire and API requests return 401 Unauthorized, automatically redirect users to login with their current URL preserved, so they can seamlessly continue their work after re-authenticating. Learn why 401 errors deserve special handling, how to use React Router's `redirect()` function and implement URL preservation with query parameters.
+
+**Skills**: Session expiration handling, React Router redirect(), URL preservation, query parameters, encodeURIComponent, Single Responsibility Principle, centralized vs distributed concerns, UX improvement patterns
+
 ---
 
 ## Screencast of the chatbot in action
