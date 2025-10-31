@@ -34,6 +34,88 @@ app.get("/", (req, res) => {
 });
 
 /**
+ * POST /api/test-mistral
+ *
+ * Test endpoint to verify Mistral API connection.
+ * Sends a simple hardcoded prompt to test the API integration.
+ *
+ * Key concepts:
+ * - Using fetch() in Node.js (same API as in the browser!)
+ * - POST requests with JSON body
+ * - Authorization header with Bearer token
+ * - Reading API documentation and translating it to code
+ * - Environment variables for API keys
+ *
+ * Mistral API structure:
+ * - Endpoint: https://api.mistral.ai/v1/chat/completions
+ * - Required headers: Authorization (Bearer token), Content-Type (application/json)
+ * - Request body: { model, messages }
+ * - messages array: [{ role: "user", content: "..." }]
+ * - Response: { choices: [{ message: { role: "assistant", content: "..." } }] }
+ */
+app.post("/api/test-mistral", async (req, res) => {
+  try {
+    // Get the Mistral API key from environment variables
+    const apiKey = process.env.MISTRAL_API_KEY;
+
+    // Validate that the API key is configured
+    if (!apiKey) {
+      return res.status(500).json({
+        error:
+          "Mistral API key not configured. Please set MISTRAL_API_KEY in your .env file",
+      });
+    }
+
+    // Call the Mistral API using fetch
+    // Note: fetch() works the same way in Node.js as it does in the browser!
+    const mistralResponse = await fetch(
+      "https://api.mistral.ai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "mistral-small-latest",
+          messages: [
+            {
+              role: "user",
+              content: "Hello! Please respond with a short greeting.",
+            },
+          ],
+        }),
+      }
+    );
+
+    // Check if the request was successful
+    if (!mistralResponse.ok) {
+      const errorData = await mistralResponse.json();
+      console.error("Mistral API error:", errorData);
+      return res.status(mistralResponse.status).json({
+        error: "Failed to get response from Mistral API",
+        details: errorData,
+      });
+    }
+
+    // Parse the response
+    const data = await mistralResponse.json();
+
+    // Return the full response for testing
+    res.json({
+      message: "Successfully connected to Mistral API!",
+      response: data,
+    });
+  } catch (error) {
+    console.error("Error testing Mistral API:", error);
+    res.status(500).json({
+      error: "Failed to test Mistral API",
+      details: error.message,
+    });
+  }
+});
+
+/**
  * GET /api/threads
  *
  * Fetches all chat threads from the database, ordered by creation date (newest first).
