@@ -424,13 +424,26 @@ app.post("/api/threads/:id/messages", requireAuth, async (req, res) => {
     `;
 
     // STEP 3: Format messages for Mistral API
-    // Mistral expects: [{ role: "user" | "assistant", content: "..." }]
+    // Mistral expects: [{ role: "user" | "assistant" | "system", content: "..." }]
     // Our database uses: { type: "user" | "bot", content: "..." }
     // We need to translate 'bot' → 'assistant' for the API
     const mistralMessages = allMessages.map((msg) => ({
       role: msg.type === "bot" ? "assistant" : "user",
       content: msg.content,
     }));
+
+    // Add a system prompt at the beginning to customize the AI's behavior
+    // The system message provides instructions to the AI about how to respond
+    // You can customize this to change your chatbot's personality!
+    const systemPrompt = {
+      role: "system",
+      content:
+        "You are a helpful and friendly AI assistant. Keep your responses concise, clear, and conversational. If you don't know something, admit it honestly. Be encouraging and supportive in your tone.",
+    };
+
+    // Prepend the system prompt to the messages array
+    // System messages should come first to set the context for the entire conversation
+    mistralMessages.unshift(systemPrompt);
 
     // STEP 4: Call Mistral API to generate a response
     const apiKey = process.env.MISTRAL_API_KEY;
