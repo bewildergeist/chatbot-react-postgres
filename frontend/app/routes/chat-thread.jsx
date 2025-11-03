@@ -5,6 +5,7 @@ import {
   useRouteError,
   href,
   Outlet,
+  useNavigation,
 } from "react-router";
 import { ChatMessages, ChatInput } from "../components/Chat.jsx";
 import { apiFetch } from "../lib/apiFetch.js";
@@ -114,6 +115,9 @@ export async function clientLoader({ params }) {
  * The action runs:
  * - When a Form with method="post" is submitted
  * - Before the loader re-runs (automatic revalidation)
+ *
+ * Note: The backend now generates an AI response after saving the user's message,
+ * so this action takes longer but returns both messages in one response.
  */
 export async function clientAction({ params, request }) {
   // Extract form data from the request
@@ -133,6 +137,11 @@ export async function clientAction({ params, request }) {
 
   // POST to our custom API to create the message with authentication
   // apiFetch automatically includes the JWT token and handles the base URL
+  // The backend will:
+  // 1. Save the user's message
+  // 2. Generate an AI response using Mistral API
+  // 3. Save the AI response
+  // 4. Return both messages
   try {
     const response = await apiFetch(
       `/api/threads/${params.threadId}/messages`,
@@ -167,14 +176,15 @@ export async function clientAction({ params, request }) {
  * Chat Thread Route Component
  *
  * Displays a conversation thread with messages from the database.
- * Now includes nested routing for editing thread title.
+ * Now includes optimistic UI for immediate user feedback using useNavigation.
  *
  * Key concepts:
  * 1. useLoaderData() HOOK: Accesses data returned from clientLoader
- * 2. useActionData() HOOK: Accesses result returned from clientAction
+ * 2. useNavigation() HOOK: Accesses current navigation state and formData
  * 3. NESTED ROUTES: Outlet component renders child routes
  * 4. LINK NAVIGATION: Link to="edit" navigates to nested edit route
- * 5. ERROR DISPLAY: Shows validation or API errors to the user
+ * 5. OPTIMISTIC UI: Shows user's message immediately before server confirms
+ * 6. PENDING STATE: Shows loading indicator while AI generates response
  *
  * Routing Structure:
  * - /chat/:threadId → This component (view thread)
@@ -182,6 +192,15 @@ export async function clientAction({ params, request }) {
  *
  * The Outlet component renders the child route above the thread view,
  * creating an overlay effect for the edit form.
+ *
+ * Optimistic UI Flow:
+ * 1. User types message and clicks Send
+ * 2. Form submits and navigation.formData becomes available
+ * 3. We create an optimistic user message from navigation.formData
+ * 4. Display optimistic message + "AI is thinking..." message
+ * 5. Backend generates AI response and saves both messages
+ * 6. Loader revalidates and shows real messages from database
+ * 7. navigation.formData clears, optimistic messages disappear
  */
 export default function ChatThread() {
   // Access the thread and messages data from the loader
@@ -189,6 +208,35 @@ export default function ChatThread() {
 
   // Access the action result (success or error)
   const actionData = useActionData();
+
+  // Access the current navigation state
+  // navigation.formData will be available during form submission
+  // navigation.state will be "submitting" or "loading" during the request
+  const navigation = useNavigation();
+
+  // Create an array to display, starting with messages from the database
+  let displayMessages = [...messages];
+
+  // If a form is being submitted and it has a "message" field,
+  // add it optimistically to the display
+  if (navigation.formData?.has("message")) {
+    // Create an optimistic user message
+    const optimisticUserMessage = {
+      id: "optimistic-user",
+      type: "user",
+      content: navigation.formData.get("message"),
+    };
+
+    // Create an optimistic bot "thinking" message
+    const optimisticBotMessage = {
+      id: "optimistic-bot",
+      type: "bot",
+      content: "AI is thinking...",
+    };
+
+    // Add both messages to the display array
+    displayMessages.push(optimisticUserMessage, optimisticBotMessage);
+  }
 
   return (
     <main className="chat-container">
@@ -199,7 +247,7 @@ export default function ChatThread() {
           Edit
         </Link>
       </div>
-      <ChatMessages messages={messages} />
+      <ChatMessages messages={displayMessages} />
       <ChatInput />
       {actionData?.error && (
         <div className="error-message">{actionData.error}</div>
