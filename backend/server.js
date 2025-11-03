@@ -34,6 +34,88 @@ app.get("/", (req, res) => {
 });
 
 /**
+ * POST /api/test-mistral
+ *
+ * Test endpoint to verify Mistral API connection.
+ * Sends a simple hardcoded prompt to test the API integration.
+ *
+ * Key concepts:
+ * - Using fetch() in Node.js (same API as in the browser!)
+ * - POST requests with JSON body
+ * - Authorization header with Bearer token
+ * - Reading API documentation and translating it to code
+ * - Environment variables for API keys
+ *
+ * Mistral API structure:
+ * - Endpoint: https://api.mistral.ai/v1/chat/completions
+ * - Required headers: Authorization (Bearer token), Content-Type (application/json)
+ * - Request body: { model, messages }
+ * - messages array: [{ role: "user", content: "..." }]
+ * - Response: { choices: [{ message: { role: "assistant", content: "..." } }] }
+ */
+app.post("/api/test-mistral", async (req, res) => {
+  try {
+    // Get the Mistral API key from environment variables
+    const apiKey = process.env.MISTRAL_API_KEY;
+
+    // Validate that the API key is configured
+    if (!apiKey) {
+      return res.status(500).json({
+        error:
+          "Mistral API key not configured. Please set MISTRAL_API_KEY in your .env file",
+      });
+    }
+
+    // Call the Mistral API using fetch
+    // Note: fetch() works the same way in Node.js as it does in the browser!
+    const mistralResponse = await fetch(
+      "https://api.mistral.ai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "mistral-small-latest",
+          messages: [
+            {
+              role: "user",
+              content: "Hello! Please respond with a short greeting.",
+            },
+          ],
+        }),
+      }
+    );
+
+    // Check if the request was successful
+    if (!mistralResponse.ok) {
+      const errorData = await mistralResponse.json();
+      console.error("Mistral API error:", errorData);
+      return res.status(mistralResponse.status).json({
+        error: "Failed to get response from Mistral API",
+        details: errorData,
+      });
+    }
+
+    // Parse the response
+    const data = await mistralResponse.json();
+
+    // Return the full response for testing
+    res.json({
+      message: "Successfully connected to Mistral API!",
+      response: data,
+    });
+  } catch (error) {
+    console.error("Error testing Mistral API:", error);
+    res.status(500).json({
+      error: "Failed to test Mistral API",
+      details: error.message,
+    });
+  }
+});
+
+/**
  * GET /api/threads
  *
  * Fetches all chat threads from the database, ordered by creation date (newest first).
@@ -230,7 +312,7 @@ app.get("/api/threads/:id/messages", requireAuth, async (req, res) => {
 /**
  * POST /api/threads/:id/messages
  *
- * Creates a new message in a thread.
+ * Creates a new message in a thread and generates an AI response.
  *
  * Authentication:
  * - Protected by requireAuth middleware
@@ -241,6 +323,22 @@ app.get("/api/threads/:id/messages", requireAuth, async (req, res) => {
  * - Verifies thread exists AND is owned by the user before creating message
  * - Users can only add messages to their own threads
  * - Returns 404 if thread doesn't exist or user doesn't own it
+ *
+ * AI Integration:
+ * - After saving user's message, fetches conversation history
+ * - Sends conversation to Mistral API to generate AI response
+ * - Saves AI response as a new message with type 'bot'
+ * - Returns both user message and AI response
+ *
+ * Sequential Operations:
+ * 1. Validate input
+ * 2. Check thread ownership
+ * 3. Save user's message to database
+ * 4. Fetch all messages in thread (for context)
+ * 5. Format messages for Mistral API
+ * 6. Call Mistral API to generate response
+ * 7. Save AI response to database
+ * 8. Return both messages to client
  *
  * SQL Concepts:
  * - INSERT INTO: Add new rows to a table
@@ -255,6 +353,7 @@ app.get("/api/threads/:id/messages", requireAuth, async (req, res) => {
  * - 400 Bad Request: Client sent invalid data
  * - 404 Not Found: Thread doesn't exist or user doesn't own it
  * - Input validation: Never trust user input
+ * - External API integration: Calling third-party services
  *
  * Security:
  * - Validate all inputs before using them
@@ -304,17 +403,99 @@ app.post("/api/threads/:id/messages", requireAuth, async (req, res) => {
       });
     }
 
-    // Insert the new message
+    // STEP 1: Insert the user's message
     // We've verified the user owns the thread, so it's safe to insert
     // RETURNING * gives us back the inserted row (including generated id and created_at)
-    const messages = await sql`
+    const userMessages = await sql`
       INSERT INTO messages (thread_id, type, content)
       VALUES (${threadId}, ${type}, ${trimmedContent})
       RETURNING id, thread_id, type, content, created_at
     `;
 
-    // Return the created message with 201 Created status
-    res.status(201).json(messages[0]);
+    const userMessage = userMessages[0];
+
+    // STEP 2: Fetch all messages in this thread to provide context to the AI
+    // We need the full conversation history so the AI understands the context
+    const allMessages = await sql`
+      SELECT id, thread_id, type, content, created_at 
+      FROM messages 
+      WHERE thread_id = ${threadId}
+      ORDER BY created_at ASC
+    `;
+
+    // STEP 3: Format messages for Mistral API
+    // Mistral expects: [{ role: "user" | "assistant" | "system", content: "..." }]
+    // Our database uses: { type: "user" | "bot", content: "..." }
+    // We need to translate 'bot' → 'assistant' for the API
+    const mistralMessages = allMessages.map((msg) => ({
+      role: msg.type === "bot" ? "assistant" : "user",
+      content: msg.content,
+    }));
+
+    // Add a system prompt at the beginning to customize the AI's behavior
+    // The system message provides instructions to the AI about how to respond
+    // You can customize this to change your chatbot's personality!
+    const systemPrompt = {
+      role: "system",
+      content:
+        "You are a helpful and friendly AI assistant. Keep your responses concise, clear, and conversational. If you don't know something, admit it honestly. Be encouraging and supportive in your tone.",
+    };
+
+    // Prepend the system prompt to the messages array
+    // System messages should come first to set the context for the entire conversation
+    mistralMessages.unshift(systemPrompt);
+
+    // STEP 4: Call Mistral API to generate a response
+    const apiKey = process.env.MISTRAL_API_KEY;
+
+    if (!apiKey) {
+      console.error("Mistral API key not configured");
+      return res.status(201).json(userMessage);
+    }
+
+    const mistralResponse = await fetch(
+      "https://api.mistral.ai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "mistral-small-latest",
+          messages: mistralMessages,
+        }),
+      }
+    );
+
+    // Check if the Mistral API request was successful
+    if (!mistralResponse.ok) {
+      const errorData = await mistralResponse.json();
+      console.error("Mistral API error:", errorData);
+      // Return the user message even if AI generation fails
+      return res.status(201).json(userMessage);
+    }
+
+    // Parse the AI response
+    const aiData = await mistralResponse.json();
+    const aiContent = aiData.choices[0].message.content;
+
+    // STEP 5: Save the AI's response to the database
+    // Note: We use type 'bot' in our database (not 'assistant')
+    const botMessages = await sql`
+      INSERT INTO messages (thread_id, type, content)
+      VALUES (${threadId}, 'bot', ${aiContent})
+      RETURNING id, thread_id, type, content, created_at
+    `;
+
+    const botMessage = botMessages[0];
+
+    // STEP 6: Return both the user's message and the AI's response
+    // This allows the frontend to display both immediately without another request
+    res.status(201).json({
+      userMessage: userMessage,
+      botMessage: botMessage,
+    });
   } catch (error) {
     console.error("Error creating message:", error);
     res.status(500).json({
