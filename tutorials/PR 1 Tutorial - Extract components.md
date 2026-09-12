@@ -1,478 +1,721 @@
-# Component Extraction & React Hierarchy - Step-by-Step Tutorial
+# Component extraction and React hierarchy - step-by-step tutorial
 
 ## 🎯 Learning objectives
 
-By the end of this tutorial, you will understand:
+By the end of this tutorial, you will be able to:
 
-- **React component fundamentals**: How to break down UI into reusable components
-- **Props basics**: Passing data from parent to child components
-- **Component hierarchy**: Building complex UIs from simple, focused components
-- **File organization**: Separating components into modules for better project structure
-- **Component composition**: Combining multiple components to build features
+- **Break a large component into smaller ones**: identify good boundaries and extract them
+- **Pass data with props**: send values from a parent component into a child
+- **Build a component hierarchy**: compose complex UI out of simple, focused pieces
+- **Organise components into files**: use `import` / `export` to split code across modules
+- **Use `props.children`**: React's pattern for passing content *inside* a component
 
 ## 📋 Prerequisites
 
-- **JavaScript fundamentals**: Variables, functions, objects, and ES6 syntax
-- **Basic HTML/CSS**: Understanding of HTML elements and CSS classes
-- **React basics** (helpful but not required): Some of you may have prior React experience — if so, help out others who don't!
+- **JavaScript fundamentals**: variables, functions, objects, and ES6 syntax
+- **Basic HTML/CSS**: HTML elements and CSS classes
+- **React basics** (helpful but not required): some of you may have prior React experience — if so, help out others who don't!
+
+## 📑 Table of contents
+
+1. [Extract the Sidebar component](#step-1)
+2. [Extract the SidebarHeader component](#step-2)
+3. [Extract the SidebarFooter component](#step-3)
+4. [Extract the ChatThreadsList component](#step-4)
+5. [Extract ChatThreadItem with props](#step-5)
+6. [Move the sidebar components to their own file](#step-6)
+7. [Extract the Message component with props](#step-7)
+8. [Extract the ChatMessages component](#step-8)
+9. [Extract the ChatInput component](#step-9)
+10. [Move the chat components to their own file](#step-10)
+11. [Use props.children for message content](#step-11)
 
 ## 🗺️ Overview
 
-In this tutorial, we'll transform a monolithic React application into a well-structured, component-based architecture. We'll start with a single large component containing all the UI logic and gradually extract smaller, focused components. This process demonstrates real-world React development patterns and best practices.
+In this tutorial you'll take a chatbot interface that is written as two big components and break
+it down into a well-structured set of small ones. The focus is on *how you organise the code*,
+not on what the app does — the UI should look exactly the same when you're finished.
 
-**What we're building**: A chatbot interface with a sidebar for navigation and a main chat area - but the focus is on _how_ we organize the code, not _what_ it does.
+You'll work outside-in: first the sidebar, then the chat area, and in both cases you'll extract
+the pieces one at a time before moving them into their own file. This is how refactoring actually
+happens in real projects — in small, safe steps where the app keeps working the whole way.
 
 ## 🧑‍💻 Today's starting point
 
-To skip the initial setup of the project, you can copy the starting point of this tutorial by running this command in the root of your local repository:
+To skip the initial setup of the project, copy the starting point of this tutorial by running
+this command in the root of your local repository:
 
 ```bash
 npx degit --force bewildergeist/chatbot-react-postgres#pr-1-start
 ```
 
-**Important**: Make a commit of this initial version before you start changing anything.
+**Important**: make a commit of this initial version before you start changing anything.
+
+### Getting the app running
+
+The command above gives you a `frontend/` folder. Everything in this tutorial happens inside it:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open **http://localhost:5173** and you should see the chatbot interface. Leave the dev server
+running while you work — it reloads the page automatically every time you save a file.
+
+> ⚠️ **About the security warnings.** `npm install` will report something like
+> *"23 vulnerabilities (1 low, 4 moderate, 14 high, 4 critical)"*. This looks alarming, but these
+> are all in build tools that run on your own machine during development — this project's
+> dependencies were pinned a while ago and have since had advisories published. Nothing here is
+> reachable by a visitor to your app. Clear the easy ones with:
+>
+> ```bash
+> npm audit fix
+> ```
+>
+> That takes you from 23 down to 8 and the app keeps working.
+>
+> **The 8 that remain — including 4 marked critical — are expected. Leave them.** Clearing them
+> requires major version upgrades of React Router and Vite, which will break the code in this tutorial. 
+
+### Where the code lives
+
+Two files matter today:
+
+| File | What's in it |
+| --- | --- |
+| `app/routes/layout.jsx` | The page shell — sidebar plus a slot for the main content |
+| `app/routes/home.jsx` | The chat area — messages and the input box |
+
+Open both and read them before you start. Notice how much is crammed into each one.
 
 ---
 
-## Step 1: Extract Sidebar component
+<a name="step-1"></a>
 
-**🔗 Commit**: [`2c8065b`](1/commits/2c8065b)
+## Step 1: Extract the Sidebar component
 
 ### 🤔 Problem to solve
 
-Our Layout component is doing too many things at once. It's handling both the overall page structure AND all the sidebar content (header, navigation, footer). This violates the single responsibility principle and makes the code harder to understand and maintain.
+`layout.jsx` is doing two jobs at once: it defines the overall page structure *and* it contains
+every last detail of the sidebar — header, navigation, footer. That makes the file long and hard
+to scan, and it means you can't reuse the sidebar anywhere else.
 
 ### 💡 Key concepts
 
-- **Function Components**: Creating React components as JavaScript functions
-- **Component Extraction**: Moving UI logic into separate, focused components
-- **Component Composition**: Using one component inside another
-- **Separation of Concerns**: Each component should have one clear responsibility
-- **JSX Returns**: How components return UI elements
+- **Function components**: a React component is just a function that returns JSX
+- **Component extraction**: moving a chunk of JSX into its own function
+- **Component composition**: using one component inside another, like an HTML tag
+- **Separation of concerns**: each component should have one clear responsibility
 
-### 🔍 What changed
+### 📝 Your task
 
-We extracted all the sidebar JSX into a new `Sidebar` function component. The Layout component now focuses only on the overall page structure, while the Sidebar component handles all navigation-related UI.
+1. In `layout.jsx`, add a new function called `Sidebar` above the existing `Layout` function
+2. Move the entire `<aside className="sidebar">…</aside>` block into it, and `return` it
+3. In `Layout`, replace where that block used to be with `<Sidebar />`
+4. Check the browser — the page should look **exactly** the same as before
+
+### 🔍 Implementation hints
+
+<details>
+<summary>💡 Hint: What a function component looks like</summary>
+
+A component is a function that returns JSX. The name **must** start with a capital letter —
+that's how React tells your components apart from HTML tags:
 
 ```jsx
-// New Sidebar component
 function Sidebar() {
-  return (
-    <aside className="sidebar">{/* All sidebar content moved here */}</aside>
-  );
-}
-
-// Simplified Layout component
-export default function Layout() {
-  return (
-    <div className="app-layout">
-      <Sidebar /> {/* Using our new component */}
-      <main className="main-content">
-        <Outlet />
-      </main>
-    </div>
-  );
+  return <aside className="sidebar">...</aside>;
 }
 ```
 
+</details>
+
+<details>
+<summary>💡 Hint: Using your component</summary>
+
+Once the function exists, you use it like a self-closing HTML tag: `<Sidebar />`. Note the space
+and slash — React components written this way must be self-closed.
+
+</details>
+
+### 💡 Think about this
+
+Before you start: when you move that JSX, does anything inside it depend on something defined in
+`Layout`? (For this step, no — which is exactly why it's a safe boundary to cut along.)
+
+### ✅ Reference implementation
+
+**🔗 Commit**: [`2c8065b`](1/commits/2c8065b7c9f150592351cfd080afdde1a71732b8)
+
 ### 💬 Discussion points
 
-1. **Component Boundaries**: What makes this a good place to split the component?
-2. **Responsibility**: What is the Layout component responsible for now vs. before?
-3. **Reusability**: How does extracting Sidebar make it potentially reusable?
+1. **Component boundaries**: what made this a good place to split the component?
+2. **Responsibility**: describe what `Layout` is responsible for now, compared to before.
 
-### ✅ Check your understanding
+### 🧪 Test your solution
 
-- **Component Thinking**: Look at the Layout component now - what is its single responsibility?
-- **Composition**: How does the Layout component "use" the Sidebar component?
-- **Next Steps**: What parts of the Sidebar component could potentially be extracted further?
+- The page renders identically to before — same sidebar, same chat area
+- Check the browser console: no errors, no warnings
+- Try temporarily renaming `Sidebar` to `sidebar` (lowercase) and reload. What happens, and why?
 
 ---
 
-## Step 2: Extract SidebarHeader component
+<a name="step-2"></a>
 
-**🔗 Commit**: [`b6b7cdb`](1/commits/b6b7cdb)
+## Step 2: Extract the SidebarHeader component
 
 ### 🤔 Problem to solve
 
-Now that we have a separate Sidebar component, we can see it still contains multiple responsibilities. The sidebar header (title + new chat button) is mixed in with navigation lists and footer content. Let's continue breaking it down into smaller, focused components.
+`Sidebar` is now its own component, but it's still doing three things: the header with the title
+and "New" button, the list of chat threads, and the user profile footer. Each of those is a
+distinct chunk of UI with its own job.
 
 ### 💡 Key concepts
 
-- **Single Responsibility Principle**: Each component should do one thing well
-- **Component Extraction**: Moving specific UI pieces into their own functions
-- **Function Components**: Using JavaScript functions to define React components
+- **Single responsibility principle**: each component should do one thing well
+- **Naming**: a good component name describes what it *is*, not what it looks like
 
-### 🔍 What changed
+### 📝 Your task
 
-We created the first extracted component: `SidebarHeader`. This component handles only the top section of the sidebar with the chatbot title and "New" button.
-
-```jsx
-function SidebarHeader() {
-  return (
-    <div className="sidebar-header">
-      <h2 className="chatbot-title">Chatbot</h2>
-      <a
-        href="/chat/new"
-        className="new-chat-btn">
-        + New
-      </a>
-    </div>
-  );
-}
-```
+1. Create a `SidebarHeader` function containing the `<div className="sidebar-header">` block —
+   the "Chatbot" title and the "+ New" link
+2. Use `<SidebarHeader />` inside `Sidebar` where that block used to be
 
 ### 💬 Discussion points
 
-1. **Why extract this into a component?** What benefits do you see in separating this logic?
-2. **Naming conventions**: Why is `SidebarHeader` a good component name?
+1. **Why extract this?** The header is only used once. What do you gain by pulling it out anyway?
+2. **Naming conventions**: why is `SidebarHeader` a better name than, say, `TopBit` or `Header`?
 
-### ✅ Check your understanding
+### ✅ Reference implementation
 
-- Can you identify other parts of the UI that could be extracted into components?
-- What makes a good "boundary" for a component?
+**🔗 Commit**: [`b6b7cdb`](1/commits/b6b7cdbc7883ddd5e24e51f7930ae6b11ee7d883)
+
+### 🧪 Test your solution
+
+- The header still shows the "Chatbot" title and the "+ New" button
+- `Sidebar` is now noticeably shorter and easier to read
 
 ---
 
-## Step 3: Extract SidebarFooter component
+<a name="step-3"></a>
 
-**🔗 Commit**: [`70fe14f`](1/commits/70fe14f)
+## Step 3: Extract the SidebarFooter component
 
 ### 🤔 Problem to solve
 
-Just like the header, the user profile section at the bottom of the sidebar has its own distinct responsibility and could be reused elsewhere.
+The user profile at the bottom of the sidebar has the same story as the header: its own distinct
+job, currently mixed in with everything else.
 
-### 💡 Key concepts
+### 📝 Your task
 
-- **Consistent Patterns**: Following the same component extraction approach
-- **UI Modularity**: Each visual section becomes its own component
-- **Reusability**: Components can potentially be used in different contexts
+Apply exactly the same pattern as step 2. Create a `SidebarFooter` function for the
+`<div className="sidebar-footer">` block (the avatar image and username), and use it inside
+`Sidebar`.
 
-### 🔍 What changed
+### 💡 Think about this
 
-Created `SidebarFooter` component to handle the user profile area with avatar and name.
+You've now done this twice. Can you describe the recipe in one sentence, without looking at the
+code? Being able to name a pattern is what lets you apply it somewhere new.
+
+### ✅ Reference implementation
+
+**🔗 Commit**: [`70fe14f`](1/commits/70fe14faa78bcda6ccd50f0b552a447434b9de4a)
 
 ### 💬 Discussion points
 
-1. **Pattern Recognition**: How is this similar to the SidebarHeader extraction?
-2. **Component Boundaries**: What visual or logical cues help you decide where one component ends and another begins?
-
-### ✅ Check your understanding
-
-- Look at the commit diff: What stays in the main component vs. what gets extracted?
+1. **Pattern recognition**: how is this identical to the `SidebarHeader` extraction?
+2. **Boundaries**: what visual or logical cues tell you where one component ends and the next begins?
 
 ---
 
-## Step 4: Extract ChatThreadsList component
+<a name="step-4"></a>
 
-**🔗 Commit**: [`e5ac28d`](1/commits/e5ac28d)
+## Step 4: Extract the ChatThreadsList component
 
 ### 🤔 Problem to solve
 
-The navigation list of chat threads is a complex piece of UI with its own navigation logic. It deserves to be its own component for clarity and potential reuse.
+The navigation list is the biggest thing left in `Sidebar` — fourteen chat threads, each one a
+`<li>` with a link inside. It deserves its own component.
 
 ### 💡 Key concepts
 
-- **Navigation Components**: Components that handle user navigation
-- **List Management**: Components that render collections of similar items
-- **Semantic HTML**: Using proper HTML elements (`nav`, `ul`, `li`) within components
+- **Container components**: components whose job is to hold a collection of things
+- **Semantic HTML**: keeping `<nav>`, `<ul>` and `<li>` properly nested as you move code around
 
-### 🔍 What changed
+### 📝 Your task
 
-Extracted the chat threads navigation into `ChatThreadsList` component, maintaining the same structure but in a focused, reusable function.
+1. Create a `ChatThreadsList` function containing the whole `<nav className="chat-threads-list">`
+   block, including the `<ul>` and all fourteen `<li>` items
+2. Use `<ChatThreadsList />` inside `Sidebar`
+
+After this step, `Sidebar` should be short enough to read at a glance — just three components
+stacked inside an `<aside>`.
+
+### ⚠️ Common mistakes
+
+- **Moving only the `<ul>` and leaving the `<nav>` behind.** Keep the whole block together — the
+  `<nav>` and its `aria-label` are part of what makes this list meaningful to screen readers.
+- **Forgetting that the fourteen `<li>` items come too.** They're still hardcoded at this point;
+  you'll deal with the repetition in the next step.
+
+### ✅ Reference implementation
+
+**🔗 Commit**: [`e5ac28d`](1/commits/e5ac28d3bd91447ba6aa86a7463f47aff13921d1)
 
 ### 💬 Discussion points
 
-1. **Component Granularity**: Is this the right level of extraction, or could we go smaller?
-2. **Data vs. Structure**: Notice how the component contains both the structure and the data - what are the pros and cons?
+1. **Granularity**: is this the right level of extraction, or could you go smaller?
+2. **Data vs. structure**: this component contains both the markup *and* the list of threads.
+   What are the downsides of that?
 
-### ✅ Check your understanding
+### 🧪 Test your solution
 
-- What other list-like UI elements might benefit from component extraction?
+- All fourteen threads still appear in the sidebar
+- Look at your `Sidebar` function — can you now understand the whole sidebar in about five seconds?
 
 ---
+
+<a name="step-5"></a>
 
 ## Step 5: Extract ChatThreadItem with props
 
-**🔗 Commit**: [`75ee544`](1/commits/75ee544)
-
 ### 🤔 Problem to solve
 
-Looking at our `ChatThreadsList`, we have repetitive HTML for each chat thread item. This repetition violates the DRY (Don't Repeat Yourself) principle and makes updates harder.
+Look inside `ChatThreadsList`. There are fourteen `<li>` elements with *identical* structure —
+only the link target and the text differ. That's the same markup written out fourteen times. If
+you ever needed to change how a thread item looks, you'd have to make the same edit fourteen
+times and hope you didn't miss one.
+
+This is your first encounter with **props**, and it's the most important idea in this tutorial.
 
 ### 💡 Key concepts
 
-- **Props Introduction**: Your first look at passing data to components
-- **Component Reusability**: Same structure, different data
-- **Parameterization**: Making components flexible through props
+- **Props**: how a parent component passes data down to a child
+- **Parameterisation**: one component, many different sets of data
+- **DRY (Don't Repeat Yourself)**: write the structure once, reuse it with different values
 
-### 🔍 What changed
+### 📝 Your task
 
-Created `ChatThreadItem` component that accepts `props` parameter. Now each list item uses the same component with different `href` and `title` values:
+1. Create a `ChatThreadItem` function that takes a single `props` parameter
+2. Move **one** `<li className="chat-thread-item">…</li>` into it
+3. Replace the hardcoded link target and text with `props.href` and `props.title`
+4. Back in `ChatThreadsList`, replace all fourteen `<li>` elements with fourteen
+   `<ChatThreadItem />` elements, passing the right `href` and `title` to each
+
+### 🔍 Implementation hints
+
+<details>
+<summary>💡 Hint: Receiving props</summary>
+
+Props arrive as a single object — the first parameter of your function:
 
 ```jsx
 function ChatThreadItem(props) {
-  return (
-    <li className="chat-thread-item">
-      <a
-        href={props.href}
-        className="chat-thread-link">
-        {props.title}
-      </a>
-    </li>
-  );
+  return <a href={props.href}>{props.title}</a>;
 }
 ```
 
+The curly braces mean "evaluate this JavaScript expression and put the result here".
+
+</details>
+
+<details>
+<summary>💡 Hint: Passing props</summary>
+
+You pass props like HTML attributes, but the values can be any JavaScript:
+
+```jsx
+<ChatThreadItem href="/chat/why-sky-blue" title="Why is the sky blue?" />
+```
+
+The names you choose here (`href`, `title`) are the names you read inside the component
+(`props.href`, `props.title`). They have to match.
+
+</details>
+
+### 💡 Think about this
+
+Before you write it: where does `props.href` get its value from? Trace the path with your finger,
+from where the value is written to where it's used. This direction — parent to child, always
+downwards — is the single most important rule in React.
+
+### ✅ Reference implementation
+
+**🔗 Commit**: [`75ee544`](1/commits/75ee544ef4edbeb2544e01ec134bc5191554b1c2)
+
+### ⚠️ Common mistakes
+
+- **Quoting the curly braces**: `href="{props.href}"` passes the literal string `{props.href}`.
+  Write `href={props.href}` with no quotes.
+- **Mismatched names**: passing `title=` but reading `props.name` gives you `undefined`, and
+  React renders nothing at all rather than throwing an error. Silent failures like this are
+  worth learning to recognise early.
+
 ### 💬 Discussion points
 
-1. **Props Magic**: How does `props.href` get its value? Trace the data flow from parent to child.
-2. **Reusability**: How many times is `ChatThreadItem` used? What does this teach us about component design?
+1. **Reusability**: how many times is `ChatThreadItem` used? What does that tell you about when
+   extraction is worth it?
+2. **Before the next step**: your `layout.jsx` now holds five separate components. Is that still
+   a good place for all of them?
 
-### ✅ Check your understanding
+### 🧪 Test your solution
 
-- **Before looking at the next step**: How do you think we could organize these components better?
-- What might be the next logical step in this refactoring process?
+- All fourteen threads render with the correct titles and links
+- Deliberately remove the `title` prop from one of them. What renders? Any console error?
+- Add a fifteenth thread. How many lines did that take, compared to before this step?
 
 ---
 
-## Step 6: Move Sidebar components to separate file
+<a name="step-6"></a>
 
-**🔗 Commit**: [`8f3919a`](1/commits/8f3919a) _(Note: Commit message is misleading - this actually moves sidebar components to external file)_
+## Step 6: Move the sidebar components to their own file
 
 ### 🤔 Problem to solve
 
-Our `layout.jsx` file is getting crowded with multiple component definitions. In a real project, this would become unmanageable. We need better file organization.
+`layout.jsx` now contains five component definitions. In a real project this file would keep
+growing until nobody could find anything in it. Time to split it up.
+
+> **Note**: the commit for this step has a misleading message — it repeats the previous step's
+> "Extract ChatThreadItem component with props". What it actually does is move the sidebar
+> components into a separate file. Look at the diff, not the message. (Writing accurate commit
+> messages is a real skill, and this is what happens when you don't!)
 
 ### 💡 Key concepts
 
-- **File Organization**: Separating components into focused files
-- **Import/Export**: Sharing components between files
-- **Module System**: Using JavaScript modules for code organization
-- **Component Composition**: Building larger components from smaller ones
+- **ES modules**: splitting JavaScript across files with `import` and `export`
+- **Default exports**: each file can have one "main" thing it exports
+- **File organisation**: grouping related components together
 
-### 🔍 What changed
+### 📝 Your task
 
-Major refactoring! All sidebar-related components moved to `/components/Sidebar.jsx`:
+1. Create a new file `app/components/Sidebar.jsx`
+2. Move `SidebarHeader`, `ChatThreadItem`, `ChatThreadsList`, `SidebarFooter` and `Sidebar` into it
+3. Give `Sidebar` a **default export**; the other four stay private to the file
+4. In `layout.jsx`, import `Sidebar` from the new file and delete the moved code
 
-- Created new file with `SidebarHeader`, `ChatThreadItem`, `ChatThreadsList`, `SidebarFooter`
-- Main `Sidebar` component composes all sub-components
-- `layout.jsx` now imports `Sidebar` from external file
+### 🔍 Implementation hints
 
-**Key pattern**:
+<details>
+<summary>💡 Hint: The export / import pair</summary>
 
 ```jsx
 // In Sidebar.jsx
-export default function Sidebar() {
-  /* ... */
-}
+export default function Sidebar() { /* ... */ }
 
 // In layout.jsx
 import Sidebar from "../components/Sidebar.jsx";
 ```
 
-### 💬 Discussion points
+With a default export, the importing file chooses the name — it doesn't have to match.
 
-1. **File Organization**: What are the benefits of moving components to separate files?
-2. **Import Strategy**: Why use `export default` instead of named exports here?
-3. **Component Boundaries**: How do you decide which components belong in the same file?
+</details>
 
-### ✅ Check your understanding
+<details>
+<summary>💡 Hint: Getting the path right</summary>
 
-- **Architecture Thinking**: Look at the new file structure. How does this make the codebase more maintainable?
-- **Reusability**: How does this file organization enable component reuse across different pages?
+`layout.jsx` lives in `app/routes/`, and the new file is in `app/components/`. So you need to go
+*up* one level and back down: `../components/Sidebar.jsx`.
 
----
+</details>
 
-## Step 7: Extract Message component with props
+### 💡 Think about this
 
-**🔗 Commit**: [`4494bbe`](1/commits/4494bbe)
+Only `Sidebar` is exported, even though there are five components in the file. Why don't the
+other four need exporting? What would it mean if you exported all of them?
 
-### 🤔 Problem to solve
+### ✅ Reference implementation
 
-Now let's apply the same component extraction principles to the chat area. Individual messages have repetitive structure and would benefit from componentization.
+**🔗 Commit**: [`8f3919a`](1/commits/8f3919ac52b4682ebb1c9507c976e62d65ec0213)
 
-### 💡 Key concepts
+### ⚠️ Common mistakes
 
-- **Props Patterns**: Using props for different types of data (text, boolean flags)
-- **Conditional Rendering**: Different styling based on props
-- **Component Consistency**: Applying extraction patterns across different UI areas
-
-### 🔍 What changed
-
-Created `Message` component that accepts props for sender type and content. Messages can now be "user" or "assistant" messages with appropriate styling.
+- **Forgetting the `.jsx` extension** in the import path.
+- **Leaving the old definitions behind** in `layout.jsx` — you'll get a confusing "already
+  declared" error, or worse, the old version silently wins.
 
 ### 💬 Discussion points
 
-1. **Props Variety**: Compare this component's props to `ChatThreadItem` - how are they different?
-2. **Conditional Logic**: How does the component handle different message types?
-
-### ✅ Check your understanding
-
-- What other parts of the chat UI could benefit from similar extraction?
+1. **File organisation**: what do you gain by moving components into their own files?
+2. **Component boundaries**: how do you decide which components belong in the *same* file?
 
 ---
 
-## Step 8: Extract ChatMessages component
+<a name="step-7"></a>
 
-**🔗 Commit**: [`90bc5ab`](1/commits/90bc5ab)
-
-### 🤔 Problem to solve
-
-The container that holds all messages is another distinct UI section that could be extracted for better organization and reusability.
-
-### 💡 Key concepts
-
-- **Container Components**: Components that manage collections of other components
-- **Component Hierarchies**: How components nest within each other
-- **Separation of Concerns**: Message container vs. individual messages
-
-### 🔍 What changed
-
-Created `ChatMessages` component that renders the scrollable area containing multiple `Message` components.
-
-### 💬 Discussion points
-
-1. **Hierarchy Patterns**: How does `ChatMessages` relate to `Message` components?
-2. **Container vs. Item**: What's the difference between a container component and an item component?
-
----
-
-## Step 9: Extract ChatInput component
-
-**🔗 Commit**: [`f6c1923`](1/commits/f6c1923)
+## Step 7: Extract the Message component with props
 
 ### 🤔 Problem to solve
 
-The chat input area (textarea + send button) is the final major UI section that needs extraction to complete our component hierarchy.
+Now turn to the chat area. Open `home.jsx` and you'll see ten message bubbles, alternating
+between the user and the bot. Same structure every time, only the styling class and the text
+change — exactly the repetition you fixed in the sidebar.
 
 ### 💡 Key concepts
 
-- **Form Components**: Extracting interactive UI elements
-- **Component Completeness**: Finishing the extraction process
-- **Input Handling**: Components that manage user input
+- **Props for variation**: using a prop to change *styling*, not just content
+- **Template literals in JSX**: building a class name from a fixed part and a variable part
 
-### 🔍 What changed
+### 📝 Your task
 
-Created `ChatInput` component containing the message textarea and send button, completing the chat UI componentization.
+1. In `home.jsx`, create a `Message` function taking `props`
+2. Give it two props: one for the message type (`"user"` or `"bot"`) and one for the text
+3. Use the type prop to build the CSS class, so a user message gets `message user-message` and a
+   bot message gets `message bot-message`
+4. Replace all ten hardcoded message blocks with `<Message />` elements
 
-### ✅ Check your understanding
+### 🔍 Implementation hints
 
-- **Before the next step**: Can you predict what file organization step might come next?
+<details>
+<summary>💡 Hint: Building a class name from a prop</summary>
 
----
-
-## Step 10: Move Chat components to external file
-
-**🔗 Commit**: [`f6d5cda`](1/commits/f6d5cda)
-
-### 🤔 Problem to solve
-
-Just like with the sidebar, our chat components should be organized in their own file for better project structure and reusability.
-
-### 💡 Key concepts
-
-- **Named Exports**: Exporting multiple components from one file
-- **Logical Grouping**: Organizing related components together
-- **Import Strategies**: Using named imports vs. default imports
-- **File Architecture**: Creating a scalable component structure
-
-### 🔍 What changed
-
-Major organization step! All chat components moved to `/components/Chat.jsx`:
-
-- `Message`, `ChatMessages`, and `ChatInput` now in separate file
-- Using **named exports** instead of default export
-- `home.jsx` uses **named imports** to get specific components
-
-**Key pattern**:
+A template literal (backticks) lets you mix fixed text with a value:
 
 ```jsx
-// In Chat.jsx - Named exports
-export function Message(props) {
-  /* ... */
-}
-export function ChatMessages() {
-  /* ... */
-}
-export function ChatInput() {
-  /* ... */
-}
-
-// In home.jsx - Named imports
-import { Message, ChatMessages, ChatInput } from "../components/Chat.jsx";
+<div className={`message ${props.type}-message`}>
 ```
+
+With `type="user"` that produces `message user-message`.
+
+</details>
+
+### ✅ Reference implementation
+
+**🔗 Commit**: [`4494bbe`](1/commits/4494bbea98ad8ee27c364b2fae53ab69bebf608d)
 
 ### 💬 Discussion points
 
-1. **Named vs. Default Exports**: Why use named exports here but default export for Sidebar?
-2. **Component Grouping**: What makes `Message`, `ChatMessages`, and `ChatInput` belong together?
-3. **Scalability**: How does this file structure help as the project grows?
+1. **Props variety**: compare this component's props to `ChatThreadItem`'s. One controls
+   appearance and one controls content — does that distinction matter?
+2. **Conditional styling**: what other ways could you handle "user vs bot" styling?
 
-### ✅ Check your understanding
+### 🧪 Test your solution
 
-- **Architecture Comparison**: Compare the before/after file structure. What are the benefits?
-- **Import Strategy**: When would you choose named imports vs. default imports?
+- User messages and bot messages still look visually different
+- Inspect a message in dev tools and confirm the class is `message user-message`, not
+  `message undefined-message`
 
 ---
+
+<a name="step-8"></a>
+
+## Step 8: Extract the ChatMessages component
+
+### 🤔 Problem to solve
+
+The messages are components now, but they still sit directly inside `Home` along with the input
+box. The scrollable conversation area is its own piece of UI.
+
+### 📝 Your task
+
+Create a `ChatMessages` function containing the `<div className="chat-messages">` wrapper and all
+the `<Message />` elements inside it. Use `<ChatMessages />` in `Home`.
+
+### ✅ Reference implementation
+
+**🔗 Commit**: [`90bc5ab`](1/commits/90bc5abd13ad3b37d59f25655a59b32cd97e1b30)
+
+### 💬 Discussion points
+
+1. **Hierarchy**: describe the relationship between `ChatMessages` and `Message`. Which one
+   knows about the other?
+2. **Container vs. item**: this is the same shape as `ChatThreadsList` and `ChatThreadItem`.
+   What's the general pattern?
+
+---
+
+<a name="step-9"></a>
+
+## Step 9: Extract the ChatInput component
+
+### 🤔 Problem to solve
+
+One piece of the chat UI is left: the textarea and send button at the bottom.
+
+### 📝 Your task
+
+Create a `ChatInput` function containing the `<div className="chat-input-container">` block, and
+use it in `Home`. When you're done, `Home` should be just two components inside a `<main>`.
+
+### ✅ Reference implementation
+
+**🔗 Commit**: [`f6c1923`](1/commits/f6c1923533fd7bd6e6996fed74439acc9a7c75c8)
+
+### 💡 Think about this
+
+Look at how short `Home` is now. Can you predict what the next step will be? (You've done it
+once already.)
+
+### 🧪 Test your solution
+
+- The input box and Send button still render at the bottom of the chat area
+- `Home` is now about five lines of JSX
+
+---
+
+<a name="step-10"></a>
+
+## Step 10: Move the chat components to their own file
+
+### 🤔 Problem to solve
+
+Same problem as step 6, same solution — but with a twist. This time you need **three**
+components available outside the file, not one.
+
+### 💡 Key concepts
+
+- **Named exports**: exporting several things from one file, each by its own name
+- **Named imports**: pulling specific names out with `{ curly braces }`
+
+### 📝 Your task
+
+1. Create `app/components/Chat.jsx`
+2. Move `Message`, `ChatMessages` and `ChatInput` into it
+3. Export them as **named exports** rather than a default export
+4. In `home.jsx`, import the ones it actually uses and delete the moved code
+
+### 🔍 Implementation hints
+
+<details>
+<summary>💡 Hint: Named exports, two ways</summary>
+
+You can mark each one as you define it:
+
+```jsx
+export function ChatMessages() { /* ... */ }
+```
+
+…or list them together at the bottom of the file, which keeps the exports in one place:
+
+```jsx
+export { Message, ChatMessages, ChatInput };
+```
+
+The reference implementation uses the second style. Both are equally valid.
+
+</details>
+
+<details>
+<summary>💡 Hint: Importing named exports</summary>
+
+Named imports use curly braces, and the names **must** match the exported names exactly:
+
+```jsx
+import { ChatMessages, ChatInput } from "../components/Chat.jsx";
+```
+
+</details>
+
+### 💡 Think about this
+
+`Home` renders `<ChatMessages />` and `<ChatInput />`, but not `<Message />` directly — `Message`
+is only used *inside* `ChatMessages`. So which names does `home.jsx` actually need to import?
+
+### ✅ Reference implementation
+
+**🔗 Commit**: [`f6d5cda`](1/commits/f6d5cdaf70c36cbf610e224458d1082fc827a4b7)
+
+### ⚠️ Common mistakes
+
+- **Mixing up the two import styles**: `import ChatMessages from ...` (no braces) asks for the
+  *default* export. If the file only has named exports, you'll get `undefined` and a confusing
+  render error.
+- **Misspelling a name**: with named imports the spelling must match exactly, including case.
+
+### 💬 Discussion points
+
+1. **Named vs. default**: why named exports here, but a default export for `Sidebar`?
+2. **Grouping**: what makes `Message`, `ChatMessages` and `ChatInput` belong in the same file?
+
+---
+
+<a name="step-11"></a>
 
 ## Step 11: Use props.children for message content
 
-**🔗 Commit**: [`5117c45`](1/commits/5117c45)
-
 ### 🤔 Problem to solve
 
-Our `Message` component currently passes content through a specific prop. React has a more flexible pattern called `props.children` that's better for content that might contain HTML or other components.
+Your `Message` component takes its text through a normal prop, which means the message content
+has to be a plain string. But message content is *content* — one day you might want a link, or
+bold text, or another component inside it. React has a dedicated pattern for exactly this.
 
 ### 💡 Key concepts
 
-- **props.children**: React's special prop for nested content
-- **Component Composition**: Building components that can contain other components
-- **Flexibility**: Making components work with various types of content
-- **React Patterns**: Learning idiomatic React development patterns
+- **`props.children`**: the special prop holding whatever you put *between* the opening and
+  closing tags
+- **Composition**: components that wrap other content rather than just receiving values
 
-### 🔍 What changed
+### 📝 Your task
 
-Modified `Message` component to use `props.children` instead of a content prop, making it more flexible and following React best practices.
+1. Change `Message` to render `props.children` instead of its content prop
+2. Update every usage from a self-closing tag with a content prop to an opening and closing tag
+   with the text in between
 
-**Before**: `<Message content="Hello world" />`
-**After**: `<Message>Hello world</Message>`
+The change looks like this:
+
+```jsx
+<Message type="user">Hello there</Message>
+```
+
+### 💡 Think about this
+
+`children` isn't a prop you pass by name — React fills it in automatically from whatever sits
+between the tags. Where have you seen this shape before? (Every HTML element you've ever
+written works this way.)
+
+### ✅ Reference implementation
+
+**🔗 Commit**: [`5117c45`](1/commits/5117c452d962c182cec882c0960ec9747e7aaeb6)
+
+### ⚠️ Common mistakes
+
+- **Leaving some usages self-closed.** `<Message type="user" />` with no children renders an
+  empty bubble — no error, just a blank message. Check all ten.
 
 ### 💬 Discussion points
 
-1. **props.children Magic**: How is `props.children` different from regular props?
-2. **Flexibility**: What types of content can now be passed to Message that couldn't before?
-3. **React Patterns**: Why is `props.children` considered a React best practice?
+1. **How is `children` different** from a regular prop like `type`?
+2. **Flexibility**: name something you could put inside a `Message` now that you couldn't before.
+3. **Where else?** Which of your other components would benefit from taking `children`?
 
-### ✅ Check your understanding
+### 🧪 Test your solution
 
-- **Pattern Recognition**: Where else might `props.children` be useful in this application?
-- **Content Types**: What different types of content could you put inside a Message component now?
+- All ten messages still show their text
+- Try putting `<strong>bold</strong>` inside one message — it renders as actual bold text, and
+  reads naturally in the JSX. Writing the same thing as a string prop would have rendered the
+  tags as visible characters.
 
 ---
 
 ## 🚀 Extra features if you have time
 
-1. **Create More Components**: Can you identify other UI patterns that could be extracted?
-2. **Props Exploration**: Try adding more props to existing components (like styling options)
-3. **Component Variations**: Create different versions of components for different use cases
-4. **File Organization**: Experiment with different ways to organize component files
+1. **Go smaller**: is there anything left that could reasonably be its own component?
+2. **More props**: give `ChatThreadItem` an `isActive` prop that adds a highlight class
+3. **Break it on purpose**: remove a prop, misspell an import, lowercase a component name. Learn
+   what each mistake looks like in the browser — you'll meet all of them again for real
+4. **Read the whole thing**: open all four files and trace the component tree from `Layout` down
+   to a single `Message`
 
 ## 📚 Additional resources
 
-- [React docs: Your First Component](https://react.dev/learn/your-first-component)
-- [React docs: Passing Props to a Component](https://react.dev/learn/passing-props-to-a-component)
-- [React docs: Understanding Your UI as a Tree](https://react.dev/learn/understanding-your-ui-as-a-tree)
-- [JavaScript ES6 Modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+- [React docs: Your first component](https://react.dev/learn/your-first-component)
+- [React docs: Passing props to a component](https://react.dev/learn/passing-props-to-a-component)
+- [React docs: Passing JSX as children](https://react.dev/learn/passing-props-to-a-component#passing-jsx-as-children)
+- [React docs: Understanding your UI as a tree](https://react.dev/learn/understanding-your-ui-as-a-tree)
+- [MDN: JavaScript modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 
 ---
 
-**🏁 Congratulations:** You've successfully learned the fundamentals of React component architecture. You now understand:
+**🏁 Congratulations:** you've turned two crowded files into a clean component hierarchy. You now
+understand:
 
-✅ **Component Extraction**: Breaking large components into smaller, focused pieces  
-✅ **Props**: Passing data from parent to child components  
-✅ **Component Hierarchy**: Building complex UIs from simple components  
-✅ **File Organization**: Structuring components across multiple files  
-✅ **React Patterns**: Using `props.children` and composition patterns
+✅ **Component extraction**: breaking large components into small, focused ones  
+✅ **Props**: passing data from parent to child  
+✅ **Component hierarchy**: building complex UI from simple pieces  
+✅ **File organisation**: default vs. named exports, and when to use each  
+✅ **`props.children`**: the composition pattern used by every React library you'll ever touch
 
-These concepts form the foundation of all React development. Every React application, no matter how complex, is built using these same principles 🤘
+One thing to notice before you go: `ChatThreadsList` still writes out fourteen `ChatThreadItem`
+elements by hand, and `ChatMessages` still lists ten messages. You've removed the duplicated
+*markup*, but the duplication has just moved. That's exactly what the next tutorial fixes 🤘

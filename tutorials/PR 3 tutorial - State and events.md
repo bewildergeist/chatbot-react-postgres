@@ -119,19 +119,69 @@ User's might want to be able to delete a chat thread. First you need to add dele
 
 Add a delete button to each thread item in the chat sidebar:
 
-1. Add a `<button>` element to the `ChatThreadItem` component
-2. Style it to appear only on hover using CSS transitions
-3. Use a red color scheme to indicate it's a destructive action
-4. Add proper accessibility attributes (`aria-label`, `type="button"`)
-5. Position it using flexbox so it aligns to the right of each thread
+1. In `ChatThreadItem`, wrap the existing `<a>` in a new `<div className="chat-thread-item-content">`
+2. Add a `<button>` **next to the link, inside that same wrapper** — as a sibling of the `<a>`, not inside it
+3. Style the wrapper with flexbox so the link takes the available space and the button sits at the right
+4. Make the button appear only when the thread item is hovered, using a CSS transition
+5. Give it a red hover colour to signal that it's destructive
+6. Add proper accessibility attributes (`aria-label`, `type="button"`)
+
+### ⚠️ Get the nesting right — this matters later
+
+It's tempting to put the button *inside* the `<a>`, since it visually sits on top of the thread
+row. **Don't.** Two reasons:
+
+- **It's invalid HTML.** The spec forbids interactive elements (like `<button>`) inside other
+  interactive elements (like `<a>`).
+- **It would break step 3.** A click on a button nested inside a link still activates the link,
+  and it is surprisingly awkward to stop that. Putting the button beside the link avoids the
+  problem entirely rather than fighting it.
+
+This is a good example of a general principle: when an interaction is fiddly to implement, the
+markup structure is often the thing to change, not the event handling.
 
 ### 🔍 Implementation hints
 
-- Use `opacity: 0` by default and `opacity: 1` on hover for the show/hide effect
-- Add a `transition` property for smooth appearance
-- The button should have `type="button"` to prevent form submission
-- Consider using an emoji or icon (like 🗑️ or ✕) for the button content
-- Think about hover states on both the parent container and the button itself
+<details>
+<summary>💡 Hint: The structure you're aiming for</summary>
+
+```jsx
+<li className="chat-thread-item">
+  <div className="chat-thread-item-content">
+    <a ...>{title}</a>
+    <button ...>&times;</button>
+  </div>
+</li>
+```
+
+The link and the button are siblings. The wrapper is what gets the flexbox layout and the hover
+state.
+
+</details>
+
+<details>
+<summary>💡 Hint: Show on hover</summary>
+
+Give the button `opacity: 0` by default, and reveal it when the *wrapper* is hovered:
+
+```css
+.chat-thread-item-content:hover .delete-thread-btn { opacity: 1; }
+```
+
+Add a `transition` on the button so it fades rather than snaps.
+
+</details>
+
+<details>
+<summary>💡 Hint: Layout</summary>
+
+`display: flex` on the wrapper, plus `flex: 1` on the link, pushes the button to the right edge
+without needing `justify-content`.
+
+</details>
+
+- The button needs `type="button"` so it never submits a form
+- Use an icon-like character for the content — the reference uses `&times;` (✕)
 
 ### ✅ Reference implementation
 
@@ -144,15 +194,19 @@ Add a delete button to each thread item in the chat sidebar:
 
 ### ⚠️ Common mistakes
 
+- **Putting the `<button>` inside the `<a>`** — invalid HTML, and it makes step 3 much harder
 - Forgetting `type="button"` makes buttons submit forms unexpectedly
-- Missing hover states confuse users about clickable elements
-- Poor color choices don't communicate button purpose
+- Hiding the button with `display: none` instead of `opacity: 0` — it can't be focused by
+  keyboard and won't animate
+- Poor colour choices don't communicate button purpose
 
 ### 🧪 Test your solution
 
-- Inspect the CSS to understand how your hover effect works
-- Try tabbing through the interface - can you focus the delete buttons with a keyboard?
-- Hover over different threads and verify the buttons appear smoothly
+- Hover over different threads and verify the buttons fade in smoothly
+- Try tabbing through the interface — can you reach the delete buttons with a keyboard?
+- Open dev tools and confirm the `<button>` is a **sibling** of the `<a>`, not a child of it
+- Clicking the thread title still navigates (the links don't do anything useful yet, but the URL
+  should change)
 
 ---
 
@@ -164,35 +218,77 @@ Add a delete button to each thread item in the chat sidebar:
 
 ### 🤔 Problem to solve
 
-Pretty buttons are useless without functionality! You need to respond to user clicks on the delete button and understand how events work in React. The challenge: the button is inside a link, so you need to prevent the link from being triggered when clicking delete.
+Pretty buttons are useless without functionality! You need to respond to user clicks on the
+delete button and understand how events work in React.
+
+Because you put the button *beside* the link in step 2 rather than inside it, clicking delete
+already doesn't navigate anywhere — the structure solved that for you. But events in the DOM
+travel upwards through ancestors, so it's worth handling this deliberately and understanding
+exactly what's happening.
 
 ### 💡 Key concepts
 
-- **Event handlers** functions that respond to user interactions
-- **Event objects** contain information about what happened
-- **Event.stopPropagation()** prevents unwanted event bubbling
+- **Event handlers**: functions that respond to user interactions
+- **Event objects**: contain information about what happened
+- **Event bubbling**: an event fires on the element you clicked, then on each of its ancestors
+- **`stopPropagation()` vs `preventDefault()`**: two very different things that are easy to confuse
 - **Console logging** for debugging and development
 
 ### 📝 Your task
 
-Make the delete button respond to clicks without triggering the parent link:
+Make the delete button respond to clicks:
 
-1. Create an event handler function called `handleDeleteClick`
+1. Create an event handler function called `handleDeleteClick` inside `ChatThreadItem`
 2. Attach it to the delete button's `onClick` prop
-3. Use `event.stopPropagation()` to prevent the click from bubbling to the parent link
+3. Call `event.stopPropagation()` so the click doesn't bubble up to the surrounding `<li>` and
+   anything that might later listen there
 4. Log useful debugging information to the console (thread id, title, timestamp)
-5. Test that clicking the delete button doesn't navigate to the thread
 
 ### 🔍 Implementation hints
 
-- Event handler functions receive an event object as their first parameter
-- The event object has methods like `stopPropagation()` and `preventDefault()`
-- Consider what data would be useful for debugging: thread information, event details, timestamps
-- Use `console.log()` with an object to see structured data in the console
+<details>
+<summary>💡 Hint: Handler shape</summary>
+
+Event handlers receive the event object as their first parameter, and you pass the function *by
+reference* — no parentheses:
+
+```jsx
+<button onClick={handleDeleteClick}>
+```
+
+Writing `onClick={handleDeleteClick()}` calls it immediately during render instead.
+
+</details>
+
+<details>
+<summary>💡 Hint: Structured logging</summary>
+
+`console.log()` with an object keeps related values together and expandable in dev tools:
+
+```js
+console.log("Delete clicked", { id, title, timestamp: new Date().toISOString() });
+```
+
+</details>
 
 ### 💡 Think about this
 
-What's the difference between `stopPropagation()` and `preventDefault()`? When would you use each one?
+**`stopPropagation()` and `preventDefault()` do completely different jobs, and confusing them
+causes bugs that are genuinely hard to diagnose.**
+
+- `stopPropagation()` stops the event travelling further *up the tree* to ancestor elements. It
+  has **no effect** on what the browser does by default.
+- `preventDefault()` cancels the browser's **default behaviour** for that event — following a
+  link, submitting a form, ticking a checkbox. It does not stop the event propagating.
+
+Here's the trap worth remembering. If you *had* nested the button inside the `<a>`, calling
+`stopPropagation()` alone would **not** have stopped the browser navigating — a link's activation
+isn't a listener on an ancestor, it's the browser's default action, so only `preventDefault()`
+cancels it. You'd need both, on invalid HTML, to get behaviour you can achieve for free by
+putting the button beside the link instead.
+
+Which of the two would you need to stop a form submitting? Which to stop a click reaching a
+parent's `onClick`?
 
 ### ✅ Reference implementation
 
@@ -200,15 +296,28 @@ What's the difference between `stopPropagation()` and `preventDefault()`? When w
 
 ### 💬 Discussion points
 
-1. **Why is `stopPropagation()` necessary?** What happens if you remove it?
+1. **Is `stopPropagation()` actually doing anything here?** Nothing currently listens for clicks
+   on the ancestors of the button. So is it pointless, or is it reasonable defensive code? Make
+   an argument either way.
 2. **What information is useful for debugging?** How can console logs help during development?
+
+### ⚠️ Common mistakes
+
+- **Calling the handler instead of passing it**: `onClick={handleDeleteClick()}` runs it once
+  during render and passes the return value to `onClick`. Leave the parentheses off.
+- **Assuming `stopPropagation()` prevents navigation.** It doesn't — that's `preventDefault()`.
+  This is the single most common misunderstanding about DOM events.
 
 ### 🧪 Test your solution
 
-- Open your browser's developer tools (F12) and click delete buttons
-- Verify that clicking the delete button logs to the console but doesn't navigate
-- Try clicking the thread title itself - it should still navigate to the thread
-- Experiment: try removing `stopPropagation()` and see what happens
+- Open your browser's developer tools (F12) and click delete buttons — each click should log
+- Clicking the thread title still navigates; clicking delete does not
+- **Run the experiment**: temporarily remove `stopPropagation()`. Nothing changes, because the
+  button isn't inside the link and nothing above it is listening. Now you've seen for yourself
+  that it isn't what's preventing navigation — the markup structure is.
+- **Optional, to see the trap for real**: temporarily move the `<button>` inside the `<a>`,
+  keeping only `stopPropagation()` in the handler. Click delete — the browser navigates anyway.
+  Add `preventDefault()` and it stops. Then put the markup back the way it was.
 
 ---
 
@@ -358,35 +467,92 @@ The chat input can submit but messages don't appear anywhere! You need to connec
 
 ### 📝 Your task
 
-Connect form submission to the messages list through lifted state:
+Connect form submission to the messages list through lifted state.
 
-1. In the `Home` component, convert the `messages` array to state using `useState`
-2. Create an `addMessage` function that:
-   - Accepts form data as a parameter
-   - Extracts the message text using the FormData API
-   - Validates that the message isn't empty (trim whitespace!)
-   - Adds a new message object to the messages array immutably
-   - Generates a unique ID for each message (use `Date.now()` for now)
-3. Pass the `addMessage` function to `ChatInput` as a prop
-4. In `ChatInput`, modify `handleSubmit` to:
-   - Create a FormData object from the form
-   - Call the `onAddMessage` callback with the form data
-   - Reset the form after successful submission
-5. Add a `name="message"` attribute to the textarea so FormData can find it
-6. Test by typing messages and seeing them appear in the chat
+**First, decide the contract between the two components.** `ChatInput` owns the form;
+`Home` owns the list. What should travel between them? Pass the **finished message text as a
+string** — `ChatInput` deals with form mechanics, `Home` deals with messages. Keep that split
+clear and both components stay simple.
+
+1. Add `name="message"` to the textarea so `FormData` can find it
+2. In `ChatInput`, extend `handleSubmit` to:
+   - Build a `FormData` object from the form
+   - Pull out the message text and `.trim()` it
+   - **Return early if it's empty** — don't submit blank messages
+   - Call the `onAddMessage` callback, passing **the trimmed string**
+   - Reset the form afterwards
+3. In `Home`, convert the `messages` array to state using `useState`
+4. Create an `addMessage` function in `Home` that:
+   - Accepts the message **text** as its parameter
+   - Builds a new message object with an `id`, `type: "user"`, and that text as `content`
+   - Appends it to the messages array **immutably**
+5. Pass `addMessage` down: `<ChatInput onAddMessage={addMessage} />`
+6. Test by typing messages and watching them appear in the chat
+
+### ⚠️ Keep the contract straight
+
+It's tempting to hand the whole `FormData` object up to `Home` and let it do the extracting. It
+works, and you'll see the pattern in real codebases — but **pick one and be consistent**, because
+the two options are not interchangeable and mixing them fails in a nasty way.
+
+If `ChatInput` passes a `FormData` object while `Home` expects a string, you don't get an error.
+React quietly renders the FormData's contents, and your message appears as something like
+`messagehello world` — the field name stuck onto the front of the text. No crash, no warning,
+just a wrong result. Silent failures like this are much harder to track down than exceptions.
+
+**This tutorial and the reference implementation both pass a string.** Later tutorials build on
+that, so stick with it.
 
 ### 🔍 Implementation hints
 
-- The FormData API: `new FormData(event.target)` gets all form field values
-- Extract values with `formData.get('fieldName')`
-- Use the spread operator for immutable array updates: `[...oldArray, newItem]`
-- The `.trim()` method removes whitespace from strings
-- Forms have a `.reset()` method to clear all fields
-- Early return pattern: `if (!message) return;` prevents empty submissions
+<details>
+<summary>💡 Hint: Reading a form field</summary>
+
+```js
+const formData = new FormData(event.target);
+const message = formData.get("message").trim();
+```
+
+`event.target` is the `<form>` element. `"message"` matches the `name` attribute on the textarea
+— if they don't match, you get `null` and `.trim()` throws.
+
+</details>
+
+<details>
+<summary>💡 Hint: Immutable append</summary>
+
+Never `push()` into state. Build a new array with the spread operator:
+
+```js
+setMessages([...messages, newMessage]);
+```
+
+React compares the old and new values to decide whether to re-render; mutating in place leaves it
+looking at the same array and nothing updates.
+
+</details>
+
+<details>
+<summary>💡 Hint: Generating an id</summary>
+
+The reference uses `messages.length + 1` — simple, and fine while messages are only ever added.
+`Date.now()` is another easy option. Have a look at the discussion point below about which one
+survives contact with a delete button.
+
+</details>
 
 ### 💡 Think about this
 
-Where should the messages state live? In ChatInput, ChatMessages, or Home? What are the trade-offs of each choice?
+Where should the messages state live — in `ChatInput`, in `ChatMessages`, or in `Home`? Work
+through each option before you look:
+
+- `ChatInput` has the new message but doesn't render the list
+- `ChatMessages` renders the list but never sees the new message
+- `Home` renders both
+
+The rule this illustrates: **when two sibling components need to share data, the state belongs in
+their nearest common parent.** That's what "lifting state up" means, and you'll apply it
+constantly.
 
 ### ✅ Reference implementation
 
@@ -394,15 +560,31 @@ Where should the messages state live? In ChatInput, ChatMessages, or Home? What 
 
 ### 💬 Discussion points
 
-1. **What's the difference between controlled and uncontrolled forms?** When would you use each approach?
-2. **Why validate empty messages?** How does this improve user experience?
+1. **What's the difference between controlled and uncontrolled forms?** This form is
+   *uncontrolled* — React never tracks what you type, it just reads the values on submit. When
+   would you want the controlled approach instead? (You'll build one in step 7.)
+2. **Where does validation belong?** You put the empty check in `ChatInput`. Could it just as
+   well live in `Home`? What about in both?
+3. **Is `messages.length + 1` a good id?** Add three messages, then imagine deleting the second
+   one and adding another. What id does the new message get, and what breaks?
+
+### ⚠️ Common mistakes
+
+- **Mismatched contract**: passing `FormData` from `ChatInput` while `Home` expects a string.
+  Renders `messagehello world` instead of `hello world`, with no error. See the warning above.
+- **Forgetting `name="message"`** on the textarea — `formData.get("message")` returns `null` and
+  `.trim()` throws `Cannot read properties of null`.
+- **Mutating state**: `messages.push(newMessage)` followed by `setMessages(messages)` renders
+  nothing, because it's still the same array.
 
 ### 🧪 Test your solution
 
-- Type messages and watch them appear in the chat!
-- Try submitting an empty message or just spaces. What happens and why?
-- Notice how the form clears after submission
-- Challenge: modify the addMessage function to add a timestamp to each message
+- Type a message and watch it appear in the chat
+- Submit an empty message, and one containing only spaces — neither should be added
+- The form clears after a successful submission
+- Check your own contract: `console.log` what `addMessage` receives. It should be a plain string,
+  not a `FormData` object
+- Challenge: add a timestamp to each message object and display it in the bubble
 
 ---
 
