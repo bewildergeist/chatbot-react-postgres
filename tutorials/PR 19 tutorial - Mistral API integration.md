@@ -1,8 +1,8 @@
-# AI-Powered Chat Responses with Mistral API - Step-by-Step Tutorial
+# AI-Powered Chat Responses with Groq API - Step-by-Step Tutorial
 
 ## 📋 Table of Contents
 
-1. [Step 1: Add Mistral API configuration](#step-1)
+1. [Step 1: Add Groq API configuration](#step-1)
 2. [Step 2: Create a test endpoint](#step-2)
 3. [Step 3: Integrate AI response generation](#step-3)
 4. [Step 4: Add system prompt](#step-4)
@@ -10,11 +10,13 @@
 
 ## 🗺️ Overview
 
-Transform your chatbot from a static message storage system into an intelligent conversational AI! In this tutorial, you'll integrate the Mistral AI API to automatically generate responses to user messages. You'll learn how to work with external APIs from Node.js, handle async sequential operations, and provide immediate user feedback with optimistic UI patterns.
+Transform your chatbot from a static message storage system into an intelligent conversational AI! In this tutorial, you'll integrate the [Groq](https://groq.com/) API to automatically generate responses to user messages. You'll learn how to work with external APIs from Node.js, handle async sequential operations, and provide immediate user feedback with optimistic UI patterns.
+
+Groq runs open-weight AI models (such as Meta's Llama) and offers a free tier that only requires an email address — no payment information needed. Its API is **OpenAI-compatible**, which means it uses the same `/chat/completions` request and response format as OpenAI, Mistral, OpenRouter and many other providers. Once you've learned it here, you can switch providers by changing just the URL, API key and model name.
 
 By the end of this tutorial, your chatbot will:
 
-- Generate intelligent AI responses to user messages using Mistral AI
+- Generate intelligent AI responses to user messages using Groq
 - Maintain conversation context across multiple messages
 - Provide instant visual feedback while waiting for AI responses
 - Handle errors gracefully when the AI service is unavailable
@@ -37,11 +39,20 @@ npx degit --force bewildergeist/chatbot-react-postgres#pr-19-start
 
 **Important**: Make a commit of this initial version before you start changing anything.
 
+> **📌 Note about the reference implementation**: The reference commits linked in each step were written for the Mistral API, which has since stopped offering free API access. Because both APIs are OpenAI-compatible, the code works the same way. Only the endpoint URL, the model name and a few names in the code differ. When you study the reference commits, mentally replace:
+>
+> | Reference commits (Mistral)                  | Your code (Groq)                                   |
+> | -------------------------------------------- | -------------------------------------------------- |
+> | `https://api.mistral.ai/v1/chat/completions` | `https://api.groq.com/openai/v1/chat/completions` |
+> | `MISTRAL_API_KEY`                            | `GROQ_API_KEY`                                     |
+> | `"mistral-small-latest"`                     | `"llama-3.3-70b-versatile"`                        |
+> | `/api/test-mistral`, `mistralMessages`       | `/api/test-groq`, `groqMessages`                   |
+
 ---
 
 <a name="step-1"></a>
 
-## Step 1: Add Mistral API configuration
+## Step 1: Add Groq API configuration
 
 ### 🤔 Problem to solve
 
@@ -56,31 +67,31 @@ Before we can integrate an AI service, we need to configure our application to s
 
 ### 📝 Your task
 
-1. **Sign up for Mistral AI**:
+1. **Sign up for Groq**:
 
-   - Go to [https://console.mistral.ai/](https://console.mistral.ai/)
-   - Create a free account
-   - Navigate to "API Keys" in the left sidebar
-   - Click "Create new key" and copy your API key
+   - Go to [https://console.groq.com/](https://console.groq.com/)
+   - Sign up with your email address — Groq sends you a magic link to log in (no password or payment information needed)
+   - Try out the models in the browser first in the [Playground](https://console.groq.com/playground): select `llama-3.3-70b-versatile`, add a system prompt, and chat with it. Click "View code" to see the equivalent API request!
+   - Go to [API Keys](https://console.groq.com/keys), click "Create API Key" and copy your key (it's only shown once)
 
 2. **Update the backend environment configuration**:
 
    - Open `backend/.env.example`
-   - Add a new environment variable for the Mistral API key (but only add a placeholder, not your real key)
+   - Add a new environment variable `GROQ_API_KEY` for the Groq API key (but only add a placeholder, not your real key)
    - Include helpful comments explaining:
      - Where to get the key
      - What it's used for
      - Why it should be kept secret
 
 3. **Add the key to your actual `.env` file**:
-   - Add your actual Mistral API key in your `backend/.env` file
+   - Add your actual Groq API key in your `backend/.env` file
    - Verify that `.env` is in your `.gitignore` (it should be!)
 
 ### ✅ Reference implementation
 
 **🔗 Commit**: [`fbcf3ae`](19/commits/fbcf3ae)
 
-This commit shows one way to structure the environment variable with helpful comments.
+This commit shows one way to structure the environment variable with helpful comments. (Remember to use `GROQ_API_KEY` and Groq's console URL instead of Mistral's.)
 
 ### 💬 Discussion points
 
@@ -104,7 +115,7 @@ This commit shows one way to structure the environment variable with helpful com
 
 ### 🤔 Problem to solve
 
-Before integrating AI into our message flow, we should verify that our API credentials work and that we understand how to communicate with the Mistral API. A dedicated test endpoint lets us experiment safely without affecting the main application flow.
+Before integrating AI into our message flow, we should verify that our API credentials work and that we understand how to communicate with the Groq API. A dedicated test endpoint lets us experiment safely without affecting the main application flow.
 
 ### 💡 Key concepts
 
@@ -116,16 +127,16 @@ Before integrating AI into our message flow, we should verify that our API crede
 
 ### 📝 Your task
 
-Create a new endpoint `POST /api/test-mistral` that:
+Create a new endpoint `POST /api/test-groq` that:
 
 1. **Validates configuration**:
 
-   - Check if `process.env.MISTRAL_API_KEY` exists
+   - Check if `process.env.GROQ_API_KEY` exists
    - Return a helpful error if it's missing
 
-2. **Calls the Mistral API**:
+2. **Calls the Groq API**:
 
-   - Endpoint: `https://api.mistral.ai/v1/chat/completions`
+   - Endpoint: `https://api.groq.com/openai/v1/chat/completions`
    - Method: POST
    - Headers:
      - `Content-Type: application/json`
@@ -134,7 +145,7 @@ Create a new endpoint `POST /api/test-mistral` that:
 
 3. **Sends a test message**:
 
-   - Use model: `"mistral-small-latest"`
+   - Use model: `"llama-3.3-70b-versatile"`
    - Send a simple message like "Hello! Please respond with a short greeting."
    - The message format is: `{ role: "user", content: "..." }`
 
@@ -146,12 +157,12 @@ Create a new endpoint `POST /api/test-mistral` that:
 
 ### 🔍 Implementation hints
 
-**Understanding the Mistral API structure:**
+**Understanding the OpenAI-compatible chat completions API structure:**
 
 ```javascript
 // Request body structure
 {
-  model: "mistral-small-latest",
+  model: "llama-3.3-70b-versatile",
   messages: [
     { role: "user", content: "your message here" }
   ]
@@ -176,6 +187,17 @@ Create a new endpoint `POST /api/test-mistral` that:
 - It returns a Response object, not the data directly
 - Call `.json()` to parse the response body
 - Check `.ok` property to see if the request succeeded
+
+**Try it with curl first:**
+
+Before writing any Node.js code, you can call the API directly from your terminal to see exactly what goes over the wire (replace `your-key-here` with your key):
+
+```bash
+curl https://api.groq.com/openai/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-key-here" \
+  -d '{"model": "llama-3.3-70b-versatile", "messages": [{"role": "user", "content": "Hello!"}]}'
+```
 
 **Where to add this endpoint:**
 
@@ -209,16 +231,18 @@ Study how this commit structures the API call, handles errors, and returns respo
 Test your endpoint using curl, Thunder Client or Postman:
 
 ```bash
-curl -X POST http://localhost:3000/api/test-mistral \
+curl -X POST http://localhost:3000/api/test-groq \
   -H "Content-Type: application/json"
 ```
 
 **Expected behavior:**
 
 - ✅ Should return a JSON response with a greeting from the AI
-- ✅ Should include the full Mistral API response structure
+- ✅ Should include the full Groq API response structure
 - ✅ If API key is missing, should return a helpful error message
-- ✅ If API key is invalid, should return an error from Mistral
+- ✅ If API key is invalid, should return an error from Groq (status 401)
+
+> **⏱️ Rate limits**: The free tier limits how many requests and tokens you can use per minute and per day. If you exceed them, Groq responds with status `429 Too Many Requests` — wait a moment and try again. You can see your exact limits on the [Limits page](https://console.groq.com/settings/limits) in the Groq console.
 
 **💡 Think about this**: What information does the response include beyond just the message content? Why might that metadata be useful?
 
@@ -230,7 +254,7 @@ curl -X POST http://localhost:3000/api/test-mistral \
 
 ### 🤔 Problem to solve
 
-Now that we can call the Mistral API, we need to integrate it into the actual message creation flow. When a user sends a message, we want to:
+Now that we can call the Groq API, we need to integrate it into the actual message creation flow. When a user sends a message, we want to:
 
 1. Save their message to the database
 2. Generate an AI response based on the conversation history
@@ -263,17 +287,17 @@ Modify the `POST /api/threads/:id/messages` endpoint to become an AI-powered mes
 - Order them chronologically (oldest first)
 - This gives the AI context about the conversation
 
-**Step 3: Format messages for Mistral API**
+**Step 3: Format messages for Groq API**
 
-- Create a new array that transforms your database messages
+- Create a new array (e.g. `groqMessages`) that transforms your database messages
 - Map `type: "user"` → `role: "user"` (stays the same)
 - Map `type: "bot"` → `role: "assistant"` (changes!)
 - Each message should be: `{ role: "...", content: "..." }`
 
-**Step 4: Call Mistral API**
+**Step 4: Call Groq API**
 
 - Use the same fetch() code from your test endpoint
-- Send the formatted conversation history as the [`messages` array](https://docs.mistral.ai/api/endpoint/chat?property=operation-chat_completion_v1_chat_completions_post_request_messages#operation-chat_completion_v1_chat_completions_post_request_messages)
+- Send the formatted conversation history as the `messages` array (see the [API reference](https://console.groq.com/docs/api-reference#chat-create))
 
 **Step 5: Save AI response**
 
@@ -412,8 +436,8 @@ Add a system prompt to customize your chatbot's personality:
 
 **Where to add this:**
 
-- After you've created the `mistralMessages` array
-- Before you call the Mistral API
+- After you've created the `groqMessages` array
+- Before you call the Groq API
 - Use `array.unshift()` to add to the beginning
 
 **Experiment!**
@@ -622,7 +646,7 @@ You've successfully transformed your chatbot into an AI-powered conversational i
 
 ✅ **Handled sequential async operations** - Your endpoint now coordinates multiple database queries and API calls in the correct order
 
-✅ **Managed data transformation** - You translated between your database schema and the Mistral API format seamlessly
+✅ **Managed data transformation** - You translated between your database schema and the OpenAI-compatible chat completions format seamlessly
 
 ✅ **Implemented conversation context** - Your AI remembers and responds based on the full conversation history
 
@@ -638,7 +662,7 @@ Ready to take your chatbot further? Try these enhancements:
 
 Let users choose different AI models:
 
-- Add a dropdown to select: `mistral-small-latest`, `mistral-medium-latest`, etc.
+- Add a dropdown to select e.g. `llama-3.3-70b-versatile`, `llama-3.1-8b-instant` or `openai/gpt-oss-20b` (see Groq's [model list](https://console.groq.com/docs/models))
 - Store the selection in thread metadata or user preferences
 - Experiment: how do different models compare in speed and quality?
 
@@ -668,11 +692,13 @@ Allow users to regenerate AI responses:
 
 ## 📚 Additional resources
 
-### Mistral AI Documentation
+### Groq Documentation
 
-- [Mistral API Documentation](https://docs.mistral.ai/api/)
-- [Chat Completion Endpoint](https://docs.mistral.ai/api/endpoint/chat)
-- [Model Overview](https://docs.mistral.ai/models/) - Compare different models
+- [Groq Playground](https://console.groq.com/playground) - Experiment with models and prompts in the browser
+- [API Reference: Chat Completions](https://console.groq.com/docs/api-reference#chat-create)
+- [OpenAI Compatibility](https://console.groq.com/docs/openai) - Why the same code works with many providers
+- [Model Overview](https://console.groq.com/docs/models) - Compare different models
+- [Rate Limits](https://console.groq.com/docs/rate-limits)
 
 ### React Router
 
@@ -686,5 +712,5 @@ Allow users to regenerate AI responses:
 
 ### Prompt Engineering
 
-- [Mistral Prompt Engineering Guide](https://docs.mistral.ai/capabilities/completion/prompting_capabilities)
+- [Groq Prompting Guide](https://console.groq.com/docs/prompting)
 - [Anthropic Prompt Engineering Guide](https://docs.anthropic.com/claude/docs/prompt-engineering) - Techniques apply to all LLMs
