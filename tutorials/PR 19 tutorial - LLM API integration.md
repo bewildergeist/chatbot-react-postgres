@@ -49,7 +49,7 @@ git switch -c ai-responses
 > | -------------------------------------------- | ------------------------------------------------- |
 > | `https://api.mistral.ai/v1/chat/completions` | `https://api.groq.com/openai/v1/chat/completions` |
 > | `MISTRAL_API_KEY`                            | `GROQ_API_KEY`                                    |
-> | `"mistral-small-latest"`                     | `"llama-3.3-70b-versatile"`                       |
+> | `"mistral-small-latest"`                     | `"openai/gpt-oss-20b"`                            |
 > | `/api/test-mistral`, `mistralMessages`       | `/api/test-groq`, `groqMessages`                  |
 >
 > The reference commits were also made _after_ steps 11–18, so the diffs contain some code you haven't written yet. Ignore these context lines and keep your own code as it is:
@@ -81,7 +81,7 @@ Before we can integrate an AI service, we need to configure our application to s
 
    - Go to [https://console.groq.com/](https://console.groq.com/)
    - Sign up with your email address — Groq sends you a magic link to log in (no password or payment information needed)
-   - Try out the models in the browser first in the [Playground](https://console.groq.com/playground): select `llama-3.3-70b-versatile`, add a system prompt, and chat with it. Click "View code" to see the equivalent API request!
+   - Try out the models in the browser first in the [Playground](https://console.groq.com/playground): select `openai/gpt-oss-20b`, add a system prompt, and chat with it. Click "View code" to see the equivalent API request!
    - Go to [API Keys](https://console.groq.com/keys), click "Create API Key" and copy your key (it's only shown once)
 
 2. **Update the backend environment configuration**:
@@ -155,7 +155,7 @@ Create a new endpoint `POST /api/test-groq` that:
 
 3. **Sends a test message**:
 
-   - Use model: `"llama-3.3-70b-versatile"`
+   - Use model: `"openai/gpt-oss-20b"`
    - Send a simple message like "Hello! Please respond with a short greeting."
    - The message format is: `{ role: "user", content: "..." }`
 
@@ -172,7 +172,7 @@ Create a new endpoint `POST /api/test-groq` that:
 ```javascript
 // Request body structure
 {
-  model: "llama-3.3-70b-versatile",
+  model: "openai/gpt-oss-20b",
   messages: [
     { role: "user", content: "your message here" }
   ]
@@ -206,7 +206,7 @@ Before writing any Node.js code, you can call the API directly from your termina
 curl https://api.groq.com/openai/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer your-key-here" \
-  -d '{"model": "llama-3.3-70b-versatile", "messages": [{"role": "user", "content": "Hello!"}]}'
+  -d '{"model": "openai/gpt-oss-20b", "messages": [{"role": "user", "content": "Hello!"}]}'
 ```
 
 **Where to add this endpoint:**
@@ -668,15 +668,7 @@ You've successfully transformed your chatbot into an AI-powered conversational i
 
 Ready to take your chatbot further? Try these enhancements:
 
-### 1. **Model selection**
-
-Let users choose different AI models:
-
-- Add a dropdown to select e.g. `llama-3.3-70b-versatile`, `llama-3.1-8b-instant` or `openai/gpt-oss-20b` (see Groq's [model list](https://console.groq.com/docs/models))
-- Store the selection in thread metadata or user preferences
-- Experiment: how do different models compare in speed and quality?
-
-### 2. **Temperature control**
+### 1. **Temperature control**
 
 Add a "creativity" slider:
 
@@ -684,7 +676,7 @@ Add a "creativity" slider:
 - UI slider that passes temperature to the API
 - Test: how does temperature affect responses?
 
-### 3. **Custom system prompts per thread**
+### 2. **Custom system prompts per thread**
 
 Allow users to set a custom personality per conversation:
 
@@ -692,7 +684,7 @@ Allow users to set a custom personality per conversation:
 - UI to edit the system prompt
 - Use the thread's custom prompt instead of the hardcoded one
 
-### 4. **Message regeneration**
+### 3. **Message regeneration**
 
 Allow users to regenerate AI responses:
 
