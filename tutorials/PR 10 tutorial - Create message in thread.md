@@ -1,5 +1,3 @@
-# Creating messages - Your first write operation - Step-by-step tutorial
-
 ## 📋 Table of contents
 
 1. [Step 1: Add express.json() middleware for parsing request bodies](#step-1)
@@ -438,7 +436,7 @@ const response = await fetch(
       "Content-Type": "application/json",
     },
     body: JSON.stringify(newMessage),
-  }
+  },
 );
 ```
 
@@ -691,6 +689,7 @@ Many developers don't realize you can't test POST in a browser address bar. Ment
 - Helps beginners understand the limitation
 - Provides alternatives (curl is intimidating for some)
 - Shows professionalism (good docs consider the audience)
+
 </details>
 
 ### 🤔 Before looking at the code

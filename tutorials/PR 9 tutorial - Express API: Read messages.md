@@ -1,5 +1,3 @@
-# Reading individual threads and messages - Step-by-step tutorial
-
 ## 📋 Table of contents
 
 1. [Step 1: Implement GET /api/threads/:id endpoint](#step-1)
@@ -55,7 +53,7 @@ This is your first endpoint with **dynamic URL parameters**!
 - **SQL WHERE clause**: Filters rows that match a condition
   - `WHERE id = ${value}` → only returns rows where id equals value
 - **404 Not Found**: Standard HTTP status for "resource doesn't exist"
-- **Parameterized queries**: The ` sql``  ` template prevents SQL injection
+- **Parameterized queries**: The `sql`` ` template prevents SQL injection
 - **Empty result handling**: You'll get an empty array `[]` when nothing matches
 
 ### 📝 Your task
@@ -437,7 +435,7 @@ const thread = await threadResponse.json(); // Direct object!
 
 // Fetch messages
 const messagesResponse = await fetch(
-  `${apiUrl}/api/threads/${params.threadId}/messages`
+  `${apiUrl}/api/threads/${params.threadId}/messages`,
 );
 const messages = await messagesResponse.json(); // Array
 ```
@@ -612,6 +610,7 @@ Use realistic fake data:
 - ✅ Realistic content and titles
 - ✅ Proper timestamp format
 - ❌ Don't use placeholders like "string" or "value"
+
 </details>
 
 <details>

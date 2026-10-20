@@ -1,5 +1,3 @@
-# Create new thread via Express API - Step-by-step tutorial
-
 ## 📋 Table of contents
 
 1. [Step 1: Implement POST /api/threads endpoint for creating new threads](#step-1)
@@ -165,7 +163,7 @@ Update the `clientAction` function in `frontend/app/routes/chat-new.jsx` to:
 - You only need one header: `"Content-Type": "application/json"` (no auth headers!)
 - The response structure is: `{ thread: {...}, message: {...} }`
 - Get the thread ID from the response: `data.thread.id`
-- Redirect using: `` redirect(`/chat/${data.thread.id}`) ``
+- Redirect using: ``redirect(`/chat/${data.thread.id}`)``
 
 ### 🔗 Compare before and after
 

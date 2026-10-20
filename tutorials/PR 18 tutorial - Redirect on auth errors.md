@@ -1,5 +1,3 @@
-# Automatic authentication error handling
-
 ## 📋 Table of Contents
 
 1. [Step 1: Add automatic redirect to login on 401 responses](#step-1)

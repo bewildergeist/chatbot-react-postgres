@@ -1,5 +1,3 @@
-# Data Mutations with React Router - Step-by-Step Tutorial
-
 ## 🎯 Learning objectives
 
 By the end of this tutorial, you will be able to:
@@ -51,14 +49,14 @@ npx degit --force bewildergeist/chatbot-react-postgres#pr-7-start
 
 All paths are inside `frontend/`:
 
-| File | What happens to it |
-| --- | --- |
-| `app/components/Chat.jsx` | `ChatInput` swaps `<form onSubmit>` for React Router's `<Form>` |
-| `app/routes/chat-thread.jsx` | Gets a `clientAction` that saves new messages |
-| `app/routes/chat-new.jsx` | Gets a `clientAction` that creates a thread and redirects to it |
-| `app/routes/layout.jsx` | Step 4: gets a `clientAction` that deletes threads |
-| `app/components/Sidebar.jsx` | Step 4: the delete button uses `useFetcher` |
-| `app/app.css` | Styles for error messages |
+| File                         | What happens to it                                              |
+| ---------------------------- | --------------------------------------------------------------- |
+| `app/components/Chat.jsx`    | `ChatInput` swaps `<form onSubmit>` for React Router's `<Form>` |
+| `app/routes/chat-thread.jsx` | Gets a `clientAction` that saves new messages                   |
+| `app/routes/chat-new.jsx`    | Gets a `clientAction` that creates a thread and redirects to it |
+| `app/routes/layout.jsx`      | Step 4: gets a `clientAction` that deletes threads              |
+| `app/components/Sidebar.jsx` | Step 4: the delete button uses `useFetcher`                     |
+| `app/app.css`                | Styles for error messages                                       |
 
 ---
 
@@ -419,16 +417,8 @@ function Component() {
 
   return (
     <fetcher.Form method="post">
-      <input
-        type="hidden"
-        name="intent"
-        value="delete"
-      />
-      <input
-        type="hidden"
-        name="id"
-        value={itemId}
-      />
+      <input type="hidden" name="intent" value="delete" />
+      <input type="hidden" name="id" value={itemId} />
       <button disabled={isLoading}>{isLoading ? "..." : "Delete"}</button>
     </fetcher.Form>
   );
@@ -455,9 +445,7 @@ export async function clientAction({ request }) {
 ```javascript
 await fetch(`${url}/threads?id=eq.${threadId}`, {
   method: "DELETE",
-  headers: {
-    /* auth headers */
-  },
+  headers: {/* auth headers */},
 });
 ```
 

@@ -1,5 +1,3 @@
-# User Accounts & Login UI - Step-by-Step Tutorial
-
 ## 📋 Table of Contents
 
 1. [Step 1: Install Supabase client library](#step-1)

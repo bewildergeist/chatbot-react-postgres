@@ -1,5 +1,3 @@
-# Rendering lists, passing props and prop drilling - step-by-step tutorial
-
 ## 🎯 Learning objectives
 
 By the end of this tutorial, you will be able to:
@@ -28,13 +26,13 @@ By the end of this tutorial, you will be able to:
 
 ## 🗺️ Overview
 
-At the end of the last tutorial you removed a lot of duplicated *markup* — but the duplication
+At the end of the last tutorial you removed a lot of duplicated _markup_ — but the duplication
 didn't really go away, it just changed shape. `ChatMessages` still writes out ten `<Message>`
 elements by hand, and `ChatThreadsList` still writes out fourteen `<ChatThreadItem>` elements.
 
 In this tutorial you'll separate **data** from **presentation**. The data becomes a plain
 JavaScript array; the component's job becomes turning that array into UI. Then you'll move each
-array *up* the component tree to where it really belongs.
+array _up_ the component tree to where it really belongs.
 
 You'll do the same two-step move twice — once for messages, once for threads — because seeing a
 pattern twice is what turns it into something you can reuse.
@@ -124,12 +122,16 @@ Curly braces let you drop a JavaScript expression into JSX. `.map()` returns an 
 elements, and React renders arrays by rendering each element in turn:
 
 ```jsx
-{messages.map((message) => (
-  <Message key={message.id} type={message.type}>{message.content}</Message>
-))}
+{
+  messages.map((message) => (
+    <Message key={message.id} type={message.type}>
+      {message.content}
+    </Message>
+  ));
+}
 ```
 
-Note that the message text goes *between* the tags — that's `props.children`, from step 11 of the
+Note that the message text goes _between_ the tags — that's `props.children`, from step 11 of the
 last tutorial.
 
 </details>
@@ -138,7 +140,7 @@ last tutorial.
 <summary>💡 Hint: Arrow function bodies</summary>
 
 `(message) => ( ... )` with parentheses returns the JSX. If you use curly braces instead —
-`(message) => { ... }` — you've written a function *body* and must `return` explicitly.
+`(message) => { ... }` — you've written a function _body_ and must `return` explicitly.
 Forgetting that is the single most common cause of "nothing renders".
 
 </details>
@@ -157,7 +159,7 @@ Before you write any code, try to answer these:
 ### ⚠️ Common mistakes
 
 - **Forgetting `key`.** The app still works, but React logs
-  *"Warning: Each child in a list should have a unique key prop"*. Keep your console open — a
+  _"Warning: Each child in a list should have a unique key prop"_. Keep your console open — a
   warning you've learned to ignore is a bug you'll miss later.
 - **Putting `key` on the wrong element.** It belongs on the outermost element returned by the
   `.map()` callback, not on something nested inside it.
@@ -186,7 +188,7 @@ Before you write any code, try to answer these:
 
 ### 🤔 Problem to solve
 
-The conversation is data now, but it's *trapped* inside `ChatMessages`. That component can only
+The conversation is data now, but it's _trapped_ inside `ChatMessages`. That component can only
 ever display those ten messages. It can't be reused for a different conversation, and `Home` —
 the component that owns the page — has no control over what's displayed.
 
@@ -197,7 +199,7 @@ live inside a component whose job is to render bubbles.
 
 - **Lifting data up**: moving data to a parent component
 - **Props for data**: a parent supplies the data, the child renders it
-- **Reusability**: a component that accepts data works with *any* data
+- **Reusability**: a component that accepts data works with _any_ data
 - **Separation of concerns**: who owns the data vs. who displays it
 
 ### 📝 Your task
@@ -218,9 +220,11 @@ function, visible to everything in the file:
 ```jsx
 import { ChatMessages, ChatInput } from "../components/Chat.jsx";
 
-const messages = [ /* ... */ ];
+const messages = [/* ... */];
 
-export default function Home() { /* ... */ }
+export default function Home() {
+  /* ... */
+}
 ```
 
 </details>
@@ -235,11 +239,11 @@ parameter and reads `props.messages`.
 
 ### 💡 Think about this
 
-Where *should* data live in a React app? There's a general rule here that you'll use constantly:
+Where _should_ data live in a React app? There's a general rule here that you'll use constantly:
 data belongs in the closest component that needs to know about it. Right now only `ChatMessages`
 uses the messages — so why move them up at all?
 
-(Hint: think about what will need to happen when the user can *send* a message.)
+(Hint: think about what will need to happen when the user can _send_ a message.)
 
 ### ✅ Reference implementation
 
@@ -256,7 +260,7 @@ uses the messages — so why move them up at all?
 ### 💬 Discussion points
 
 1. **Data ownership**: why is it better for the parent to own the data?
-2. **Reusability**: could you now render a *second* `ChatMessages` with completely different
+2. **Reusability**: could you now render a _second_ `ChatMessages` with completely different
    messages on the same page?
 3. **Data flow**: describe the path the data takes, from where it's defined to where it's shown.
 
@@ -391,7 +395,7 @@ and it breaks, you won't know which link in the chain is wrong.
 
 - **Breaking the chain in the middle.** If `Sidebar` forgets to pass `threads` on,
   `ChatThreadsList` receives `undefined` and `props.threads.map(...)` throws
-  *"Cannot read properties of undefined (reading 'map')"*. Learn to recognise that message — it
+  _"Cannot read properties of undefined (reading 'map')"_. Learn to recognise that message — it
   almost always means a prop didn't arrive.
 - **Renaming the prop along the way.** Passing `threadList={threads}` from `Sidebar` while
   `ChatThreadsList` reads `props.threads` fails silently until the `.map()` throws.
@@ -443,7 +447,7 @@ now understand:
 ✅ **List rendering** with `.map()` and why `key` matters  
 ✅ **Lifting data up** to the component that should own it  
 ✅ **Prop drilling** and its trade-offs  
-✅ **Separating data from presentation**  
+✅ **Separating data from presentation**
 
 Everything on screen is still fixed, though — the arrays never change. In the next tutorial you'll
-make the app *react* to the user: clicking, typing, and data that changes over time 🤘
+make the app _react_ to the user: clicking, typing, and data that changes over time 🤘

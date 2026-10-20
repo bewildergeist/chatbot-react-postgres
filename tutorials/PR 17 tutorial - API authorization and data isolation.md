@@ -1,5 +1,3 @@
-# Authorization - User Data Isolation
-
 ## 📋 Table of Contents
 
 1. [Step 1: Add user_id column to threads table for data ownership](#step-1)

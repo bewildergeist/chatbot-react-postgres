@@ -1,5 +1,3 @@
-# Edit Thread Titles via Express API - Step-by-Step Tutorial
-
 ## 📋 Table of Contents
 
 1. [Step 1: Implement PATCH endpoint](#step-1)
@@ -245,6 +243,7 @@ The parent route (`chat-thread.jsx`) already fetched the thread data in its load
 - `<Link to="edit">` navigates from `/chat/123` to `/chat/123/edit` (appends to current URL)
 - `<Link to="..">` navigates from `/chat/123/edit` to `/chat/123` (goes up one level)
 - `redirect("..")` in the action does the same navigation programmatically
+
 </details>
 
 <details>

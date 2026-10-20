@@ -1,5 +1,3 @@
-# Backend authentication enforcement - Step-by-step tutorial
-
 ## 📋 Table of contents
 
 1. [Step 1: Install @supabase/supabase-js in backend](#step-1)

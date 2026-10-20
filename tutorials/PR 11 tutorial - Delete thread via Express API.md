@@ -1,5 +1,3 @@
-# Delete thread via Express API - Step-by-step tutorial
-
 ## 📋 Table of contents
 
 1. [Step 1: Implement DELETE /api/threads/:id endpoint](#step-1)

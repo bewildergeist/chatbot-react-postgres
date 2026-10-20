@@ -1,5 +1,3 @@
-# Data fetching with clientLoader - Step-by-step tutorial
-
 ## 🎯 Learning objectives
 
 By the end of this tutorial, you will be able to:
@@ -48,12 +46,12 @@ npx degit --force bewildergeist/chatbot-react-postgres#pr-5-start
 
 All paths are inside `frontend/`:
 
-| File | What happens to it |
-| --- | --- |
+| File                         | What happens to it                                       |
+| ---------------------------- | -------------------------------------------------------- |
 | `app/routes/chat-thread.jsx` | Gets a `clientLoader` that returns the thread's messages |
-| `app/routes/layout.jsx` | Gets a `clientLoader` that returns the thread list |
+| `app/routes/layout.jsx`      | Gets a `clientLoader` that returns the thread list       |
 | `app/components/Sidebar.jsx` | `Link` becomes `NavLink`, to highlight the active thread |
-| `app/app.css` | Styles for the active (and, in step 4, pending) link |
+| `app/app.css`                | Styles for the active (and, in step 4, pending) link     |
 
 ---
 

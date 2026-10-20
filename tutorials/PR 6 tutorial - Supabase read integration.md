@@ -1,5 +1,3 @@
-# Supabase integration: Database setup and data fetching - Step-by-step tutorial
-
 ## 🎯 Learning objectives
 
 By the end of this tutorial, you will be able to:
@@ -46,13 +44,13 @@ npx degit --force bewildergeist/chatbot-react-postgres#pr-6-start
 
 ### Where the code lives
 
-| File | What happens to it |
-| --- | --- |
+| File                                           | What happens to it                                        |
+| ---------------------------------------------- | --------------------------------------------------------- |
 | `supabase/README.md`, `schema.sql`, `seed.sql` | New: setup instructions and SQL scripts for your database |
-| `frontend/.env.example` | New: a template for your Supabase URL and key |
-| `frontend/.gitignore` | `.env` is added, so your keys never get committed |
-| `frontend/app/routes/layout.jsx` | The loader fetches the thread list from Supabase |
-| `frontend/app/routes/chat-thread.jsx` | The loader fetches one thread and its messages |
+| `frontend/.env.example`                        | New: a template for your Supabase URL and key             |
+| `frontend/.gitignore`                          | `.env` is added, so your keys never get committed         |
+| `frontend/app/routes/layout.jsx`               | The loader fetches the thread list from Supabase          |
+| `frontend/app/routes/chat-thread.jsx`          | The loader fetches one thread and its messages            |
 
 ---
 

@@ -1,5 +1,3 @@
-# Building your own REST API - Step-by-step tutorial
-
 ## 📋 Table of contents
 
 1. [Step 1: Create minimal Express server structure](#step-1)
@@ -86,6 +84,7 @@ Your `package.json` needs:
 - `"type": "module"` for ES6 imports
 - Express dependency (version ^4.18.2 or higher)
 - Scripts that use `node --env-file=.env` and `--watch` for development
+
 </details>
 
 <details>
@@ -193,6 +192,7 @@ Your Express server is running, but it can't talk to the database yet. You need 
 2. Click **Connect** in the header
 3. Find **Connection String** > **URI** > **Transaction pooler**
 4. Copy the connection string and replace `[YOUR-PASSWORD]` with your actual database password
+
 </details>
 
 <details>
@@ -550,6 +550,7 @@ Create a `backend/README.md` file that includes:
 - Step-by-step instructions
 - Troubleshooting tips
 - Links to additional resources
+
 </details>
 
 <details>

@@ -1,5 +1,3 @@
-# React State and Event Handling - Step-by-Step Tutorial
-
 ## 🎯 Learning Objectives
 
 By the end of this tutorial, you will understand and be able to implement:
@@ -128,7 +126,7 @@ Add a delete button to each thread item in the chat sidebar:
 
 ### ⚠️ Get the nesting right — this matters later
 
-It's tempting to put the button *inside* the `<a>`, since it visually sits on top of the thread
+It's tempting to put the button _inside_ the `<a>`, since it visually sits on top of the thread
 row. **Don't.** Two reasons:
 
 - **It's invalid HTML.** The spec forbids interactive elements (like `<button>`) inside other
@@ -162,10 +160,12 @@ state.
 <details>
 <summary>💡 Hint: Show on hover</summary>
 
-Give the button `opacity: 0` by default, and reveal it when the *wrapper* is hovered:
+Give the button `opacity: 0` by default, and reveal it when the _wrapper_ is hovered:
 
 ```css
-.chat-thread-item-content:hover .delete-thread-btn { opacity: 1; }
+.chat-thread-item-content:hover .delete-thread-btn {
+  opacity: 1;
+}
 ```
 
 Add a `transition` on the button so it fades rather than snaps.
@@ -221,7 +221,7 @@ without needing `justify-content`.
 Pretty buttons are useless without functionality! You need to respond to user clicks on the
 delete button and understand how events work in React.
 
-Because you put the button *beside* the link in step 2 rather than inside it, clicking delete
+Because you put the button _beside_ the link in step 2 rather than inside it, clicking delete
 already doesn't navigate anywhere — the structure solved that for you. But events in the DOM
 travel upwards through ancestors, so it's worth handling this deliberately and understanding
 exactly what's happening.
@@ -249,8 +249,8 @@ Make the delete button respond to clicks:
 <details>
 <summary>💡 Hint: Handler shape</summary>
 
-Event handlers receive the event object as their first parameter, and you pass the function *by
-reference* — no parentheses:
+Event handlers receive the event object as their first parameter, and you pass the function _by
+reference_ — no parentheses:
 
 ```jsx
 <button onClick={handleDeleteClick}>
@@ -266,7 +266,11 @@ Writing `onClick={handleDeleteClick()}` calls it immediately during render inste
 `console.log()` with an object keeps related values together and expandable in dev tools:
 
 ```js
-console.log("Delete clicked", { id, title, timestamp: new Date().toISOString() });
+console.log("Delete clicked", {
+  id,
+  title,
+  timestamp: new Date().toISOString(),
+});
 ```
 
 </details>
@@ -276,12 +280,12 @@ console.log("Delete clicked", { id, title, timestamp: new Date().toISOString() }
 **`stopPropagation()` and `preventDefault()` do completely different jobs, and confusing them
 causes bugs that are genuinely hard to diagnose.**
 
-- `stopPropagation()` stops the event travelling further *up the tree* to ancestor elements. It
+- `stopPropagation()` stops the event travelling further _up the tree_ to ancestor elements. It
   has **no effect** on what the browser does by default.
 - `preventDefault()` cancels the browser's **default behaviour** for that event — following a
   link, submitting a form, ticking a checkbox. It does not stop the event propagating.
 
-Here's the trap worth remembering. If you *had* nested the button inside the `<a>`, calling
+Here's the trap worth remembering. If you _had_ nested the button inside the `<a>`, calling
 `stopPropagation()` alone would **not** have stopped the browser navigating — a link's activation
 isn't a listener on an ancestor, it's the browser's default action, so only `preventDefault()`
 cancels it. You'd need both, on invalid HTML, to get behaviour you can achieve for free by
@@ -561,7 +565,7 @@ constantly.
 ### 💬 Discussion points
 
 1. **What's the difference between controlled and uncontrolled forms?** This form is
-   *uncontrolled* — React never tracks what you type, it just reads the values on submit. When
+   _uncontrolled_ — React never tracks what you type, it just reads the values on submit. When
    would you want the controlled approach instead? (You'll build one in step 7.)
 2. **Where does validation belong?** You put the empty check in `ChatInput`. Could it just as
    well live in `Home`? What about in both?

@@ -1,5 +1,3 @@
-# Component extraction and React hierarchy - step-by-step tutorial
-
 ## 🎯 Learning objectives
 
 By the end of this tutorial, you will be able to:
@@ -8,7 +6,7 @@ By the end of this tutorial, you will be able to:
 - **Pass data with props**: send values from a parent component into a child
 - **Build a component hierarchy**: compose complex UI out of simple, focused pieces
 - **Organise components into files**: use `import` / `export` to split code across modules
-- **Use `props.children`**: React's pattern for passing content *inside* a component
+- **Use `props.children`**: React's pattern for passing content _inside_ a component
 
 ## 📋 Prerequisites
 
@@ -33,7 +31,7 @@ By the end of this tutorial, you will be able to:
 ## 🗺️ Overview
 
 In this tutorial you'll take a chatbot interface that is written as two big components and break
-it down into a well-structured set of small ones. The focus is on *how you organise the code*,
+it down into a well-structured set of small ones. The focus is on _how you organise the code_,
 not on what the app does — the UI should look exactly the same when you're finished.
 
 You'll work outside-in: first the sidebar, then the chat area, and in both cases you'll extract
@@ -65,7 +63,7 @@ Open **http://localhost:5173** and you should see the chatbot interface. Leave t
 running while you work — it reloads the page automatically every time you save a file.
 
 > ⚠️ **About the security warnings.** `npm install` will report something like
-> *"23 vulnerabilities (1 low, 4 moderate, 14 high, 4 critical)"*. This looks alarming, but these
+> _"23 vulnerabilities (1 low, 4 moderate, 14 high, 4 critical)"_. This looks alarming, but these
 > are all in build tools that run on your own machine during development — this project's
 > dependencies were pinned a while ago and have since had advisories published. Nothing here is
 > reachable by a visitor to your app. Clear the easy ones with:
@@ -77,16 +75,16 @@ running while you work — it reloads the page automatically every time you save
 > That takes you from 23 down to 8 and the app keeps working.
 >
 > **The 8 that remain — including 4 marked critical — are expected. Leave them.** Clearing them
-> requires major version upgrades of React Router and Vite, which will break the code in this tutorial. 
+> requires major version upgrades of React Router and Vite, which will break the code in this tutorial.
 
 ### Where the code lives
 
 Two files matter today:
 
-| File | What's in it |
-| --- | --- |
+| File                    | What's in it                                              |
+| ----------------------- | --------------------------------------------------------- |
 | `app/routes/layout.jsx` | The page shell — sidebar plus a slot for the main content |
-| `app/routes/home.jsx` | The chat area — messages and the input box |
+| `app/routes/home.jsx`   | The chat area — messages and the input box                |
 
 Open both and read them before you start. Notice how much is crammed into each one.
 
@@ -98,7 +96,7 @@ Open both and read them before you start. Notice how much is crammed into each o
 
 ### 🤔 Problem to solve
 
-`layout.jsx` is doing two jobs at once: it defines the overall page structure *and* it contains
+`layout.jsx` is doing two jobs at once: it defines the overall page structure _and_ it contains
 every last detail of the sidebar — header, navigation, footer. That makes the file long and hard
 to scan, and it means you can't reuse the sidebar anywhere else.
 
@@ -175,7 +173,7 @@ distinct chunk of UI with its own job.
 ### 💡 Key concepts
 
 - **Single responsibility principle**: each component should do one thing well
-- **Naming**: a good component name describes what it *is*, not what it looks like
+- **Naming**: a good component name describes what it _is_, not what it looks like
 
 ### 📝 Your task
 
@@ -267,7 +265,7 @@ stacked inside an `<aside>`.
 ### 💬 Discussion points
 
 1. **Granularity**: is this the right level of extraction, or could you go smaller?
-2. **Data vs. structure**: this component contains both the markup *and* the list of threads.
+2. **Data vs. structure**: this component contains both the markup _and_ the list of threads.
    What are the downsides of that?
 
 ### 🧪 Test your solution
@@ -283,7 +281,7 @@ stacked inside an `<aside>`.
 
 ### 🤔 Problem to solve
 
-Look inside `ChatThreadsList`. There are fourteen `<li>` elements with *identical* structure —
+Look inside `ChatThreadsList`. There are fourteen `<li>` elements with _identical_ structure —
 only the link target and the text differ. That's the same markup written out fourteen times. If
 you ever needed to change how a thread item looks, you'd have to make the same edit fourteen
 times and hope you didn't miss one.
@@ -402,7 +400,9 @@ growing until nobody could find anything in it. Time to split it up.
 
 ```jsx
 // In Sidebar.jsx
-export default function Sidebar() { /* ... */ }
+export default function Sidebar() {
+  /* ... */
+}
 
 // In layout.jsx
 import Sidebar from "../components/Sidebar.jsx";
@@ -416,7 +416,7 @@ With a default export, the importing file chooses the name — it doesn't have t
 <summary>💡 Hint: Getting the path right</summary>
 
 `layout.jsx` lives in `app/routes/`, and the new file is in `app/components/`. So you need to go
-*up* one level and back down: `../components/Sidebar.jsx`.
+_up_ one level and back down: `../components/Sidebar.jsx`.
 
 </details>
 
@@ -438,7 +438,7 @@ other four need exporting? What would it mean if you exported all of them?
 ### 💬 Discussion points
 
 1. **File organisation**: what do you gain by moving components into their own files?
-2. **Component boundaries**: how do you decide which components belong in the *same* file?
+2. **Component boundaries**: how do you decide which components belong in the _same_ file?
 
 ---
 
@@ -454,7 +454,7 @@ change — exactly the repetition you fixed in the sidebar.
 
 ### 💡 Key concepts
 
-- **Props for variation**: using a prop to change *styling*, not just content
+- **Props for variation**: using a prop to change _styling_, not just content
 - **Template literals in JSX**: building a class name from a fixed part and a variable part
 
 ### 📝 Your task
@@ -583,7 +583,9 @@ components available outside the file, not one.
 You can mark each one as you define it:
 
 ```jsx
-export function ChatMessages() { /* ... */ }
+export function ChatMessages() {
+  /* ... */
+}
 ```
 
 …or list them together at the bottom of the file, which keeps the exports in one place:
@@ -610,7 +612,7 @@ import { ChatMessages, ChatInput } from "../components/Chat.jsx";
 ### 💡 Think about this
 
 `Home` renders `<ChatMessages />` and `<ChatInput />`, but not `<Message />` directly — `Message`
-is only used *inside* `ChatMessages`. So which names does `home.jsx` actually need to import?
+is only used _inside_ `ChatMessages`. So which names does `home.jsx` actually need to import?
 
 ### ✅ Reference implementation
 
@@ -619,7 +621,7 @@ is only used *inside* `ChatMessages`. So which names does `home.jsx` actually ne
 ### ⚠️ Common mistakes
 
 - **Mixing up the two import styles**: `import ChatMessages from ...` (no braces) asks for the
-  *default* export. If the file only has named exports, you'll get `undefined` and a confusing
+  _default_ export. If the file only has named exports, you'll get `undefined` and a confusing
   render error.
 - **Misspelling a name**: with named imports the spelling must match exactly, including case.
 
@@ -637,12 +639,12 @@ is only used *inside* `ChatMessages`. So which names does `home.jsx` actually ne
 ### 🤔 Problem to solve
 
 Your `Message` component takes its text through a normal prop, which means the message content
-has to be a plain string. But message content is *content* — one day you might want a link, or
+has to be a plain string. But message content is _content_ — one day you might want a link, or
 bold text, or another component inside it. React has a dedicated pattern for exactly this.
 
 ### 💡 Key concepts
 
-- **`props.children`**: the special prop holding whatever you put *between* the opening and
+- **`props.children`**: the special prop holding whatever you put _between_ the opening and
   closing tags
 - **Composition**: components that wrap other content rather than just receiving values
 
@@ -718,4 +720,4 @@ understand:
 
 One thing to notice before you go: `ChatThreadsList` still writes out fourteen `ChatThreadItem`
 elements by hand, and `ChatMessages` still lists ten messages. You've removed the duplicated
-*markup*, but the duplication has just moved. That's exactly what the next tutorial fixes 🤘
+_markup_, but the duplication has just moved. That's exactly what the next tutorial fixes 🤘

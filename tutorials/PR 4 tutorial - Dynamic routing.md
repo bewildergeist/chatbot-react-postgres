@@ -1,5 +1,3 @@
-# Dynamic routing with React Router v7 - Step-by-step tutorial
-
 ## 🎯 Learning objectives
 
 By the end of this tutorial, you will be able to:
@@ -47,13 +45,13 @@ npx degit --force bewildergeist/chatbot-react-postgres#pr-4-start
 
 All paths are inside `frontend/`:
 
-| File | What happens to it |
-| --- | --- |
-| `app/routes.js` | Two new routes: `/chat/new` and `/chat/:threadId` |
-| `app/routes/chat-new.jsx` | New file: the "start a new conversation" screen |
-| `app/routes/chat-thread.jsx` | New file: the screen for one conversation |
-| `app/components/Sidebar.jsx` | `<a>` tags become `<Link>` components |
-| `app/routes/layout.jsx` | The hardcoded `href` is removed from each thread |
+| File                         | What happens to it                                |
+| ---------------------------- | ------------------------------------------------- |
+| `app/routes.js`              | Two new routes: `/chat/new` and `/chat/:threadId` |
+| `app/routes/chat-new.jsx`    | New file: the "start a new conversation" screen   |
+| `app/routes/chat-thread.jsx` | New file: the screen for one conversation         |
+| `app/components/Sidebar.jsx` | `<a>` tags become `<Link>` components             |
+| `app/routes/layout.jsx`      | The hardcoded `href` is removed from each thread  |
 
 ---
 
@@ -146,6 +144,7 @@ To define a URL parameter, prefix it with a colon:
 
 - `route("chat/:threadId", "...")` creates a parameter named `threadId`
 - This matches `/chat/1`, `/chat/abc`, `/chat/anything`
+
 </details>
 
 <details>
@@ -323,7 +322,7 @@ This commit demonstrates:
 
 1. **String vs number types**: URL parameters are always strings. If you need to use the `threadId` to fetch data from an API or database, do you need to convert it to a number? Why or why not?
 
-2. **Shared state problem**: Notice the comment in the code about messages being "shared among all threads". Why is this happening? (Hint: `/chat/1` and `/chat/2` render the *same* component. Does React create a new one when only the URL parameter changes?)
+2. **Shared state problem**: Notice the comment in the code about messages being "shared among all threads". Why is this happening? (Hint: `/chat/1` and `/chat/2` render the _same_ component. Does React create a new one when only the URL parameter changes?)
 
 ### 🧪 Test your solution
 

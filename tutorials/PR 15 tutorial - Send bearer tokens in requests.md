@@ -1,5 +1,3 @@
-# Sending Authentication Tokens - Step-by-Step Tutorial
-
 ## 📋 Table of Contents
 
 1. [Step 1: Create apiFetch helper to include auth tokens](#step-1)
@@ -330,10 +328,7 @@ const {
 **Intent button**:
 
 ```javascript
-<button
-  type="submit"
-  name="intent"
-  value="logout">
+<button type="submit" name="intent" value="logout">
   Logout
 </button>
 ```

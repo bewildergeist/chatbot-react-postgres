@@ -1,5 +1,3 @@
-# AI-Powered Chat Responses with Groq API - Step-by-Step Tutorial
-
 ## 📋 Table of Contents
 
 1. [Step 1: Add Groq API configuration](#step-1)
@@ -47,12 +45,12 @@ git switch -c ai-responses
 
 > **📌 Note about the reference implementation**: The reference commits linked in each step were written for the Mistral API, which has since stopped offering free API access. Because both APIs are OpenAI-compatible, the code works the same way. Only the endpoint URL, the model name and a few names in the code differ. When you study the reference commits, mentally replace:
 >
-> | Reference commits (Mistral)                  | Your code (Groq)                                   |
-> | -------------------------------------------- | -------------------------------------------------- |
+> | Reference commits (Mistral)                  | Your code (Groq)                                  |
+> | -------------------------------------------- | ------------------------------------------------- |
 > | `https://api.mistral.ai/v1/chat/completions` | `https://api.groq.com/openai/v1/chat/completions` |
-> | `MISTRAL_API_KEY`                            | `GROQ_API_KEY`                                     |
-> | `"mistral-small-latest"`                     | `"llama-3.3-70b-versatile"`                        |
-> | `/api/test-mistral`, `mistralMessages`       | `/api/test-groq`, `groqMessages`                   |
+> | `MISTRAL_API_KEY`                            | `GROQ_API_KEY`                                    |
+> | `"mistral-small-latest"`                     | `"llama-3.3-70b-versatile"`                       |
+> | `/api/test-mistral`, `mistralMessages`       | `/api/test-groq`, `groqMessages`                  |
 >
 > The reference commits were also made _after_ steps 11–18, so the diffs contain some code you haven't written yet. Ignore these context lines and keep your own code as it is:
 >
