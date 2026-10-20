@@ -62,11 +62,17 @@ Implement endpoints to fetch individual threads and their messages. Learn route 
 
 **Skills**: Route parameters, SQL WHERE clauses, 404 handling, nested resources, foreign keys, API integration
 
-### Step 10: Creating Messages - [PR #10 tutorial](https://github.com/bewildergeist/chatbot-react-postgres/pull/10)
+### Step 10a: Creating Messages - [PR #10 tutorial](https://github.com/bewildergeist/chatbot-react-postgres/pull/10)
 
 Build your first write operation with a POST endpoint to create messages. Parse request bodies with middleware, validate user input, use SQL INSERT statements, return proper status codes (201 Created), and handle security considerations for write operations. Users can now type and save messages through your custom API.
 
 **Skills**: POST requests, request body parsing, input validation, SQL INSERT, status codes, write operation security
+
+### Step 10b: AI-Powered Chat Responses - [PR #19 tutorial](https://github.com/bewildergeist/chatbot-react-postgres/pull/19)
+
+Turn your chatbot into a real conversational AI by integrating an LLM through Groq's OpenAI-compatible chat completions API. Call an external API from Node.js with `fetch()` and Bearer token authentication, send the full conversation history as context, translate between your database format and the API's message roles, and shape the AI's personality with a system prompt. Add optimistic UI with `useNavigation` so users see their message and a "thinking" indicator immediately. You'll build this step on a separate Git branch and merge it back in after the authentication steps, resolving merge conflicts along the way.
+
+**Skills**: External API integration, fetch() in Node.js, Bearer token authentication, OpenAI-compatible chat completions, conversation context, system prompts, sequential async operations, optimistic UI, useNavigation hook, Git branching and merging
 
 ### Step 11: Deleting Threads - [PR #11 tutorial](https://github.com/bewildergeist/chatbot-react-postgres/pull/11)
 
