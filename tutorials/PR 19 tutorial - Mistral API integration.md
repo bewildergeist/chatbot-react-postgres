@@ -31,13 +31,19 @@ By the end of this tutorial, your chatbot will:
 
 ## 🧑‍💻 Today's starting point
 
-If you haven't fully completed the prior tutorials, you may copy the starting point of this tutorial by running this command in the root of your local repository:
+This tutorial builds directly on **step 10** (creating messages via the Express API). If you haven't fully completed the prior tutorials, you may copy the starting point of this tutorial by running this command in the root of your local repository:
 
 ```bash
-npx degit --force bewildergeist/chatbot-react-postgres#pr-19-start
+npx degit --force bewildergeist/chatbot-react-postgres#pr-11-start
 ```
 
 **Important**: Make a commit of this initial version before you start changing anything.
+
+**Work on a separate branch**: You'll build the AI integration on its own branch, and continue the following steps (11–18) on `main` as usual. At the end, you'll merge the two together (see [Merging your AI branch later](#merging)). Create the branch before you make any changes:
+
+```bash
+git switch -c ai-responses
+```
 
 > **📌 Note about the reference implementation**: The reference commits linked in each step were written for the Mistral API, which has since stopped offering free API access. Because both APIs are OpenAI-compatible, the code works the same way. Only the endpoint URL, the model name and a few names in the code differ. When you study the reference commits, mentally replace:
 >
@@ -47,6 +53,12 @@ npx degit --force bewildergeist/chatbot-react-postgres#pr-19-start
 > | `MISTRAL_API_KEY`                            | `GROQ_API_KEY`                                     |
 > | `"mistral-small-latest"`                     | `"llama-3.3-70b-versatile"`                        |
 > | `/api/test-mistral`, `mistralMessages`       | `/api/test-groq`, `groqMessages`                   |
+>
+> The reference commits were also made _after_ steps 11–18, so the diffs contain some code you haven't written yet. Ignore these context lines and keep your own code as it is:
+>
+> - `requireAuth` in the backend route definitions (authentication, added in step 16)
+> - `apiFetch(...)` in `chat-thread.jsx` (added in step 15) — keep using plain `fetch()` with `import.meta.env.VITE_API_URL` like you did in step 10
+> - The nested edit route and `<Outlet />` in `chat-thread.jsx` (added in step 13)
 
 ---
 
@@ -277,7 +289,7 @@ Modify the `POST /api/threads/:id/messages` endpoint to become an AI-powered mes
 
 **Step 1: Save the user's message** (you already do this)
 
-- Keep the existing validation and authorization checks
+- Keep the existing validation checks
 - Insert the user's message into the database
 - Store the returned message in a variable (you'll need it later)
 
@@ -689,6 +701,27 @@ Allow users to regenerate AI responses:
 - "Regenerate" button on bot messages
 - Delete and recreate the message
 - Keep conversation context intact
+
+<a name="merging"></a>
+
+## 🔀 Merging your AI branch later
+
+You built the AI integration on the `ai-responses` branch, while steps 11–18 continue on `main`. Once you've completed steps 11–18, merge the two:
+
+```bash
+git switch main
+git merge ai-responses
+```
+
+**Expect merge conflicts** — this is normal and a good exercise! Both branches changed the same parts of these files:
+
+- `backend/server.js` — the `POST /api/threads/:id/messages` endpoint now has both authentication/authorization checks (steps 16–17) _and_ AI response generation (this step)
+- `frontend/app/routes/chat-thread.jsx` — `apiFetch()` (step 15), the nested edit route (step 13) _and_ the optimistic UI (this step)
+- `backend/.env.example` — Supabase variables (step 16) _and_ `GROQ_API_KEY` (this step)
+
+In each conflict, you'll usually want to **keep both sides**: the auth code from `main` and the AI code from `ai-responses`. The reference implementation in this PR was built on top of steps 11–18, so its diffs show exactly what the merged result should look like. VS Code has a built-in merge editor that makes this easier.
+
+After resolving the conflicts, test that you can still log in, send a message and get an AI response, then commit the merge.
 
 ## 📚 Additional resources
 

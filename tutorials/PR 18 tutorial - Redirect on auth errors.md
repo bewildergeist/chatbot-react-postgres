@@ -7,7 +7,7 @@
 
 ## 🗺️ Overview
 
-Your chatbot application has complete authentication and authorization, but there's a user experience problem: when a user's session expires (JWT tokens expire after a period of time), API requests return 401 Unauthorized errors. Currently, these errors are handled by each route individually—some show error messages, some might break the UI.
+Your chatbot application has authentication, but there's a user experience problem: when a user's session expires (JWT tokens expire after a period of time), API requests return 401 Unauthorized errors. Currently, these errors are handled by each route individually—some show error messages, some might break the UI.
 
 It would be much better UX to **automatically redirect users to login when their session expires**, and even better to **return them to where they were** after they log in again.
 
@@ -23,10 +23,10 @@ In this tutorial, you'll implement **centralized session expiration handling** i
 
 ## 🧑‍💻 Today's starting point
 
-If you haven't fully completed the prior tutorials, you may copy the starting point of this tutorial by running this command in the root of your local repository:
+This tutorial builds on **step 16** (backend authentication enforcement). Step 17 (authorization) comes after this one. If you haven't fully completed the prior tutorials, you may copy the starting point of this tutorial by running this command in the root of your local repository:
 
 ```bash
-npx degit --force bewildergeist/chatbot-react-postgres#pr-18-start
+npx degit --force bewildergeist/chatbot-react-postgres#pr-17-start
 ```
 
 **Important**: Make a commit of this initial version before you start changing anything.

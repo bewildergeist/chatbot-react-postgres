@@ -25,10 +25,10 @@ In this tutorial, you'll implement **authorization**—the process of determinin
 
 ## 🧑‍💻 Today's starting point
 
-If you haven't fully completed the prior tutorials, you may copy the starting point of this tutorial by running this command in the root of your local repository:
+This tutorial builds on **step 18** (redirect on auth errors), which comes before this one. If you haven't fully completed the prior tutorials, you may copy the starting point of this tutorial by running this command in the root of your local repository:
 
 ```bash
-npx degit --force bewildergeist/chatbot-react-postgres#pr-17-start
+npx degit --force bewildergeist/chatbot-react-postgres#pr-17-start-after-18
 ```
 
 **Important**: Make a commit of this initial version before you start changing anything.
